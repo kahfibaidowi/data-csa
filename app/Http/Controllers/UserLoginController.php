@@ -42,7 +42,7 @@ class UserLoginController extends Controller
         if($validation->fails()){
             return response()->json([
                 'error' =>"VALIDATION_ERROR",
-                'data'  =>$validation->errors()
+                'data'  =>$validation->errors()->first()
             ], 500);
         }
 
@@ -77,7 +77,7 @@ class UserLoginController extends Controller
         if($validation->fails()){
             return response()->json([
                 'error' =>"VALIDATION_ERROR",
-                'data'  =>$validation->errors()
+                'data'  =>$validation->errors()->first()
             ], 500);
         }
 

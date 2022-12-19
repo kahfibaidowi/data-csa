@@ -11,7 +11,6 @@ class UserModel extends Model{
     protected $primaryKey="id_user";
     protected $fillable=[
         "username",
-        "email",
         "password",
         "nama_lengkap",
         "role",

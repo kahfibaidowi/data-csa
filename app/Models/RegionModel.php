@@ -30,4 +30,17 @@ class RegionModel extends Model{
      *#FUNCTION
      *
      */
+    public function kabupaten_kota(){
+        return $this->hasMany(RegionModel::class, "nested", "id_region")->where("type", "kabupaten_kota")->orderBy("region");
+    }
+    public function kecamatan(){
+        return $this->hasMany(RegionModel::class, "nested", "id_region")->where("type", "kecamatan")->orderBy("region");
+    }
+    public function parent(){
+        return $this->belongsTo(RegionModel::class, "nested", "id_region");
+    }
+
+    public function ews(){
+        return $this->hasMany(EwsModel::class, "id_region", "id_region");
+    }
 }

@@ -13,13 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tbl_region', function (Blueprint $table) {
-            $table->id("id_region");
-            $table->unsignedBigInteger("nested")->nullable();
-            $table->text("type");
-            $table->text("region");
-            $table->text("data")->nullable();
-            $table->longText("geo_json");
+        Schema::create('tbl_opt', function (Blueprint $table) {
+            $table->id("id_opt");
+            $table->text("opt");
             $table->timestamps();
         });
     }
@@ -31,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tbl_region');
+        Schema::dropIfExists('tbl_opt');
     }
 };

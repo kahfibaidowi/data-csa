@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Repository\UserRepo;
-use App\Models\UserModel;
+use App\Repository\OptRepo;
+use App\Models\OptModel;
 
-class UserController extends Controller
+class OptController extends Controller
 {
 
     public function add(Request $request)
@@ -19,7 +19,7 @@ class UserController extends Controller
         $req=$request->all();
 
         //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin'])){
+        if(false){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -27,14 +27,7 @@ class UserController extends Controller
 
         //VALIDATION
         $validation=Validator::make($req, [
-            'username'      =>"required|unique:App\Models\UserModel,username",
-            'nama_lengkap'  =>"required",
-            'password'      =>"required|min:5",
-            'role'          =>"required|in:admin,kementan",
-            "avatar_url"    =>[
-                Rule::requiredIf(!isset($req['avatar_url']))
-            ],
-            "status"        =>"required|in:active,suspend"
+            'opt'   =>"required"
         ]);
         if($validation->fails()){
             return response()->json([
@@ -45,12 +38,8 @@ class UserController extends Controller
 
         //SUCCESS
         DB::transaction(function() use($req){
-            UserModel::create([
-                'username'      =>$req['username'],
-                'nama_lengkap'  =>$req['nama_lengkap'],
-                'password'      =>Hash::make($req['password']),
-                'role'          =>$req['role'],
-                'avatar_url'    =>$req['avatar_url']
+            OptModel::create([
+                'opt'   =>$req['opt']
             ]);
         });
 
@@ -72,27 +61,10 @@ class UserController extends Controller
         }
 
         //VALIDATION
-        $req['id_user']=$id;
+        $req['id_opt']=$id;
         $validation=Validator::make($req, [
-            'id_user'       =>"required|exists:App\Models\UserModel,id_user",
-            'username'      =>[
-                'required',
-                Rule::unique("App\Models\UserModel")->where(function($query)use($req){
-                    return $query->where("id_user", "!=", $req['id_user']);
-                })
-            ],
-            'nama_lengkap'  =>"required",
-            'password'      =>[
-                Rule::requiredIf(!isset($req['password'])),
-                'min:5'
-            ],
-            'status'        =>[
-                'required',
-                Rule::in(["active", "suspend"])
-            ],
-            "avatar_url"    =>[
-                Rule::requiredIf(!isset($req['avatar_url']))
-            ]
+            'id_opt'=>"required|exists:App\Models\OptModel,id_opt",
+            'opt'   =>"required"
         ]);
         if($validation->fails()){
             return response()->json([
@@ -102,20 +74,8 @@ class UserController extends Controller
         }
 
         //SUCCESS
-        $data_update=[
-            'username'      =>$req['username'],
-            'nama_lengkap'  =>$req['nama_lengkap'],
-            'status'        =>$req['status'],
-            'avatar_url'    =>$req['avatar_url']
-        ];
-        if($req['password']!=""){
-            $data_update=array_merge($data_update, [
-                'password'  =>Hash::make($req['password'])
-            ]);
-        }
-
-        DB::transaction(function()use($data_update, $req){
-            UserModel::where("id_user", $req['id_user'])->update($data_update);
+        DB::transaction(function()use($req){
+            OptModel::where("id_opt", $req['id_opt'])->update(['opt'=>$req['opt']]);
         });
 
         return response()->json([
@@ -136,9 +96,9 @@ class UserController extends Controller
         }
 
         //VALIDATION
-        $req['id_user']=$id;
+        $req['id_opt']=$id;
         $validation=Validator::make($req, [
-            'id_user'   =>"required|exists:App\Models\UserModel,id_user"
+            'id_opt'=>"required|exists:App\Models\OptModel,id_opt"
         ]);
         if($validation->fails()){
             return response()->json([
@@ -147,16 +107,9 @@ class UserController extends Controller
             ], 500);
         }
 
-        //ME
-        if($req['id_user']==$login_data['id_user']){
-            return response()->json([
-                'error' =>"SELF_DELETE_NOT_ALLOWED"
-            ], 500);
-        }
-
         //SUCCESS
         DB::transaction(function() use($req){
-            UserModel::where("id_user", $req['id_user'])->delete();
+            OptModel::where("id_opt", $req['id_opt'])->delete();
         });
 
         return response()->json([
@@ -170,7 +123,7 @@ class UserController extends Controller
         $req=$request->all();
         
         //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin'])){
+        if(false){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
@@ -185,14 +138,6 @@ class UserController extends Controller
             ],
             'q'         =>[
                 Rule::requiredIf(!isset($req['q']))
-            ],
-            'role'      =>[
-                Rule::requiredIf(!isset($req['role'])),
-                Rule::in(['admin', 'dinkes', "posyandu", "dinas"]),
-            ],
-            'status'    =>[
-                Rule::requiredIf(!isset($req['status'])),
-                Rule::in(['active', 'suspend'])
             ]
         ]);
         if($validation->fails()){
@@ -203,13 +148,13 @@ class UserController extends Controller
         }
 
         //SUCCESS
-        $users=UserRepo::gets_user($req);
+        $opt=OptRepo::gets_opt($req);
 
         return response()->json([
             'first_page'    =>1,
-            'current_page'  =>$users['current_page'],
-            'last_page'     =>$users['last_page'],
-            'data'          =>$users['data']
+            'current_page'  =>$opt['current_page'],
+            'last_page'     =>$opt['last_page'],
+            'data'          =>$opt['data']
         ]);
     }
 
@@ -219,16 +164,16 @@ class UserController extends Controller
         $req=$request->all();
         
         //ROLE AUTHENTICATION
-        if(!in_array($login_data['role'], ['admin'])){
+        if(false){
             return response()->json([
                 'error' =>"ACCESS_NOT_ALLOWED"
             ], 403);
         }
 
         //VALIDATION
-        $req['id_user']=$id;
+        $req['id_opt']=$id;
         $validation=Validator::make($req, [
-            'id_user'   =>"required|exists:App\Models\UserModel,id_user"
+            'id_opt'=>"required|exists:App\Models\OptModel,id_opt"
         ]);
         if($validation->fails()){
             return response()->json([
@@ -238,10 +183,10 @@ class UserController extends Controller
         }
 
         //SUCCESS
-        $user=UserRepo::get_user($req['id_user']);
+        $opt=OptRepo::get_opt($req['id_opt']);
         
         return response()->json([
-            'data'  =>$user
+            'data'  =>$opt
         ]);
     }
 }

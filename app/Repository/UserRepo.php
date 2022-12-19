@@ -36,7 +36,7 @@ class UserRepo{
         $params['status']=trim($params['status']);
 
         //query
-        $query=UserModel::with("region");
+        $query=UserModel::query();
         //--q
         $query=$query->where(function($query) use($params){
             $query->where("nama_lengkap", "like", "%".$params['q']."%")
