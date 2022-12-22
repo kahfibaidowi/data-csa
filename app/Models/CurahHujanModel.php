@@ -5,21 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 
-class EwsModel extends Model{
+class CurahHujanModel extends Model{
 
-
-    protected $table="tbl_ews";
-    protected $primaryKey="id_ews";
+    protected $table="tbl_curah_hujan";
+    protected $primaryKey="id_curah_hujan";
     protected $fillable=[
         "id_region",
-        "type",
         "tahun",
         "bulan",
-        "opt_utama",
-        "produksi"
-    ];
-    protected $casts=[
-        "opt_utama" =>"array"
+        "curah_hujan",
+        "curah_hujan_normal",
+        "sifat"
     ];
     protected $perPage=99999999999999999999;
 

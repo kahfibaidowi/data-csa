@@ -2,13 +2,13 @@
 
 namespace App\Repository;
 
-use App\Models\EwsModel;
+use App\Models\CurahHujanModel;
 use App\Models\RegionModel;
 
 
-class EwsRepo{
+class CurahHujanRepo{
 
-    public static function gets_ews_kabupaten_kota($params)
+    public static function gets_curah_hujan_kabupaten_kota($params)
     {
         //params
         $params['per_page']=trim($params['per_page']);
@@ -18,9 +18,6 @@ class EwsRepo{
         //query
         $query=RegionModel::where("type", "kabupaten_kota");
         $query=$query->with([
-            "ews"   =>function($q)use($params){
-                return $q->where("type", $params['type'])->where("tahun", $params['tahun']);
-            },
             "curah_hujan"   =>function($q)use($params){
                 return $q->where("tahun", $params['tahun']);
             },
@@ -53,5 +50,23 @@ class EwsRepo{
         return array_merge($data, [
             'data'  =>$new_data
         ]);
+    }
+
+    public static function generate_sifat_hujan($curah_hujan, $normal)
+    {
+        if($normal==0){
+            return "?";
+        }
+
+        $value=$curah_hujan/$normal;
+        if($value<0.85){
+            return "BN";
+        }
+        if($value>=0.85 && $value<=1.15){
+            return "N";
+        }
+        if($value>1.15){
+            return "AN";
+        }
     }
 }

@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Repository\EwsRepo;
-use App\Models\EwsModel;
+use App\Repository\CurahHujanRepo;
+use App\Models\CurahHujanModel;
 
-class EwsController extends Controller
+class CurahHujanController extends Controller
 {
 
     public function upsert(Request $request)
@@ -28,15 +28,10 @@ class EwsController extends Controller
         //VALIDATION
         $validation=Validator::make($req, [
             'id_region' =>"required|exists:App\Models\RegionModel,id_region",
-            'type'      =>"required",
             'tahun'     =>"required|date_format:Y",
             'bulan'     =>"required|integer|min:1|max:12",
-            'opt_utama' =>[
-                Rule::requiredIf(!isset($req['opt_utama'])),
-                "array",
-                "min:0"
-            ],
-            'produksi'  =>"required|numeric|min:0"
+            'curah_hujan'   =>"required|numeric",
+            'curah_hujan_normal'=>"required|numeric"
         ]);
         if($validation->fails()){
             return response()->json([
@@ -46,27 +41,28 @@ class EwsController extends Controller
         }
 
         //SUCCESS
-        $ews=(object)[];
-        DB::transaction(function() use($req, &$ews){
-            $update=EwsModel::updateOrCreate(
+        $curah_hujan=(object)[];
+        DB::transaction(function() use($req, &$curah_hujan){
+            $sifat=CurahHujanRepo::generate_sifat_hujan($req['curah_hujan'], $req['curah_hujan_normal']);
+            $update=CurahHujanModel::updateOrCreate(
                 [
                     'id_region' =>$req['id_region'],
-                    'type'      =>$req['type'],
                     'tahun'     =>$req['tahun'],
                     'bulan'     =>$req['bulan']
                 ],
                 [
-                    'opt_utama' =>$req['opt_utama'],
-                    'produksi'  =>$req['produksi']
+                    'curah_hujan'       =>$req['curah_hujan'],
+                    'curah_hujan_normal'=>$req['curah_hujan_normal'],
+                    'sifat'             =>$sifat
                 ]
             );
 
-            $ews=$update;
+            $curah_hujan=$update;
         });
 
         return response()->json([
             'status'=>"ok",
-            'data'  =>$ews
+            'data'  =>$curah_hujan
         ]);
     }
     
@@ -83,9 +79,9 @@ class EwsController extends Controller
         }
 
         //VALIDATION
-        $req['id_ews']=$id;
+        $req['id_curah_hujan']=$id;
         $validation=Validator::make($req, [
-            'id_ews'=>"required|exists:App\Models\EwsModel,id_ews"
+            'id_curah_hujan'=>"required|exists:App\Models\CurahHujanModel,id_curah_hujan"
         ]);
         if($validation->fails()){
             return response()->json([
@@ -96,7 +92,7 @@ class EwsController extends Controller
 
         //SUCCESS
         DB::transaction(function() use($req){
-            EwsModel::where("id_ews", $req['id_ews'])->delete();
+            CurahHujanModel::where("id_curah_hujan", $req['id_curah_hujan'])->delete();
         });
 
         return response()->json([
@@ -127,7 +123,6 @@ class EwsController extends Controller
                 Rule::requiredIf(!isset($req['q']))
             ],
             'tahun'     =>"required|date_format:Y",
-            'type'      =>"required",
             'province_id'=>[
                 Rule::requiredIf(!isset($req['province_id'])),
                 Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
@@ -146,13 +141,13 @@ class EwsController extends Controller
         }
 
         //SUCCESS
-        $ews=EwsRepo::gets_ews_kabupaten_kota($req);
-
+        $curah_hujan=CurahHujanRepo::gets_curah_hujan_kabupaten_kota($req);
+        
         return response()->json([
             'first_page'    =>1,
-            'current_page'  =>$ews['current_page'],
-            'last_page'     =>$ews['last_page'],
-            'data'          =>$ews['data']
+            'current_page'  =>$curah_hujan['current_page'],
+            'last_page'     =>$curah_hujan['last_page'],
+            'data'          =>$curah_hujan['data']
         ]);
     }
 }

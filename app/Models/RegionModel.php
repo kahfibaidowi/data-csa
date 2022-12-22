@@ -43,4 +43,7 @@ class RegionModel extends Model{
     public function ews(){
         return $this->hasMany(EwsModel::class, "id_region", "id_region");
     }
+    public function curah_hujan(){
+        return $this->hasMany(CurahHujanModel::class, "id_region", "id_region");
+    }
 }

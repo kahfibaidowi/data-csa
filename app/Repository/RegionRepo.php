@@ -7,16 +7,38 @@ use App\Models\RegionModel;
 
 class RegionRepo{
     
-    public static function gets_provinsi($params)
+    public static function gets_pulau($params)
     {
         //params
         $params['per_page']=trim($params['per_page']);
 
         //query
-        $query=RegionModel::query();
+        $query=RegionModel::select("data->pulau as pulau");
         $query=$query->where("type", "provinsi")
-            ->where("region", "like", "%".$params['q']."%")
-            ->orderBy("region");
+            ->where("data->pulau", "like", "%".$params['q']."%")
+            ->where("data->pulau", "!=", "")
+            ->groupBy("pulau")
+            ->orderBy("data->pulau");
+        
+        //return
+        return $query->paginate($params['per_page'])->toArray();
+    }
+
+    public static function gets_provinsi($params)
+    {
+        //params
+        $params['per_page']=trim($params['per_page']);
+        $params['pulau']=trim($params['pulau']);
+
+        //query
+        $query=RegionModel::query();
+        $query=$query->where("type", "provinsi")->where("region", "like", "%".$params['q']."%");
+        //--pulau
+        if($params['pulau']!=""){
+            $query=$query->where("data->pulau", $params['pulau']);
+        }
+        //--order
+        $query=$query->orderBy("region");
         
         //return
         return $query->paginate($params['per_page'])->toArray();

@@ -47,6 +47,7 @@ $router->group(['prefix'=>'/user_login', 'middleware'=>'auth'], function()use($r
 
 //REGION
 $router->group(['prefix'=>'/region', 'middleware'=>'auth'], function()use($router){
+    $router->get("/type/pulau", ['uses'=>"RegionController@gets_pulau"]);
     $router->get("/type/provinsi", ['uses'=>"RegionController@gets_provinsi"]);
     $router->get("/type/kabupaten_kota", ['uses'=>"RegionController@gets_kabupaten_kota"]);
     $router->get("/type/kecamatan", ['uses'=>"RegionController@gets_kecamatan"]);
@@ -66,9 +67,22 @@ $router->group(['prefix'=>'/opt', 'middleware'=>'auth'], function()use($router){
     $router->put("/{id}", ['uses'=>"OptController@update"]);
 });
 
+//CURAH HUJAN
+$router->group(['prefix'=>'/curah_hujan', 'middleware'=>'auth'], function()use($router){
+    $router->post("/", ['uses'=>"CurahHujanController@upsert"]);
+    $router->delete("/{id}", ['uses'=>"CurahHujanController@delete"]);
+    $router->get("/type/kabupaten_kota", ['uses'=>"CurahHujanController@gets_kabupaten_kota"]);
+});
+
 //EWS
 $router->group(['prefix'=>'/ews', 'middleware'=>'auth'], function()use($router){
     $router->post("/", ['uses'=>"EwsController@upsert"]);
     $router->delete("/{id}", ['uses'=>"EwsController@delete"]);
     $router->get("/type/kabupaten_kota", ['uses'=>"EwsController@gets_kabupaten_kota"]);
+});
+
+//frontpage
+$router->group(['prefix'=>"/frontpage"], function()use($router){
+    $router->get("/summary_ews_produksi", ['uses'=>"FrontpageController@get_summary_ews_produksi"]);
+    $router->get("/summary_sifat_hujan_kabupaten_kota", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kabupaten_kota"]);
 });

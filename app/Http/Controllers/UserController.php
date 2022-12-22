@@ -188,7 +188,7 @@ class UserController extends Controller
             ],
             'role'      =>[
                 Rule::requiredIf(!isset($req['role'])),
-                Rule::in(['admin', 'dinkes', "posyandu", "dinas"]),
+                Rule::in(['admin', 'kementan']),
             ],
             'status'    =>[
                 Rule::requiredIf(!isset($req['status'])),

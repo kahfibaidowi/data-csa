@@ -373,6 +373,47 @@ class RegionController extends Controller
     }
 
     //GET
+    public function gets_pulau(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(false){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $region=RegionRepo::gets_pulau($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$region['current_page'],
+            'last_page'     =>$region['last_page'],
+            'data'          =>$region['data']
+        ]);
+    }
+
     public function gets_provinsi(Request $request)
     {
         $login_data=$request['fm__login_data'];
@@ -394,6 +435,9 @@ class RegionController extends Controller
             ],
             'q'         =>[
                 Rule::requiredIf(!isset($req['q']))
+            ],
+            'pulau'     =>[
+                Rule::requiredIf(!isset($req['pulau']))
             ]
         ]);
         if($validation->fails()){
