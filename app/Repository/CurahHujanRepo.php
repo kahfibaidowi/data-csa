@@ -51,22 +51,4 @@ class CurahHujanRepo{
             'data'  =>$new_data
         ]);
     }
-
-    public static function generate_sifat_hujan($curah_hujan, $normal)
-    {
-        if($normal==0){
-            return "?";
-        }
-
-        $value=$curah_hujan/$normal;
-        if($value<0.85){
-            return "BN";
-        }
-        if($value>=0.85 && $value<=1.15){
-            return "N";
-        }
-        if($value>1.15){
-            return "AN";
-        }
-    }
 }

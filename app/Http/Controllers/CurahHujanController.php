@@ -43,7 +43,6 @@ class CurahHujanController extends Controller
         //SUCCESS
         $curah_hujan=(object)[];
         DB::transaction(function() use($req, &$curah_hujan){
-            $sifat=CurahHujanRepo::generate_sifat_hujan($req['curah_hujan'], $req['curah_hujan_normal']);
             $update=CurahHujanModel::updateOrCreate(
                 [
                     'id_region' =>$req['id_region'],
@@ -53,7 +52,6 @@ class CurahHujanController extends Controller
                 [
                     'curah_hujan'       =>$req['curah_hujan'],
                     'curah_hujan_normal'=>$req['curah_hujan_normal'],
-                    'sifat'             =>$sifat
                 ]
             );
 

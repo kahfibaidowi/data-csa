@@ -20,7 +20,6 @@ return new class extends Migration
             $table->integer("bulan");
             $table->double("curah_hujan");
             $table->double("curah_hujan_normal");
-            $table->text("sifat");
             $table->timestamps();
 
             //fk

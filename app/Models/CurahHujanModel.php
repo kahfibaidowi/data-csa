@@ -14,8 +14,7 @@ class CurahHujanModel extends Model{
         "tahun",
         "bulan",
         "curah_hujan",
-        "curah_hujan_normal",
-        "sifat"
+        "curah_hujan_normal"
     ];
     protected $perPage=99999999999999999999;
 
