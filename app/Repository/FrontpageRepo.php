@@ -23,13 +23,24 @@ class FrontpageRepo{
     public static function get_summary_sifat_hujan_kabupaten_kota($params)
     {
         //query
-        $query=RegionModel::where("type", "kabupaten_kota");
+        $query=RegionModel::with("parent:id_region,nested,region")->where("type", "kabupaten_kota");
         //--curah hujan
         $query=$query->with([
             "curah_hujan"   =>function($q)use($params){
                 return $q->where("tahun", $params['tahun']);
             }
         ]);
+        //--order
+        $query=$query->orderBy("region");
+
+        //return
+        return $query->get();
+    }
+
+    public static function gets_region_provinsi($params)
+    {
+        //query
+        $query=RegionModel::select("id_region", "nested", "region", "data")->where("type", "provinsi");
         //--order
         $query=$query->orderBy("region");
 

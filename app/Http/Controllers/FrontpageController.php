@@ -57,4 +57,16 @@ class FrontpageController extends Controller
             'data'  =>$summary
         ]);
     }
+
+    public function gets_region_provinsi(Request $request)
+    {
+        $req=$request->all();
+
+        //SUCCESS
+        $provinsi=FrontpageRepo::gets_region_provinsi($req);
+
+        return response()->json([
+            'data'  =>$provinsi
+        ]);
+    }
 }
