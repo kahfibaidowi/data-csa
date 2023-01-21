@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text("type");
             $table->integer("tahun");
             $table->integer("bulan");
+            $table->integer("input_ke");
             $table->text("opt_utama");
             $table->double("produksi");
             $table->timestamps();

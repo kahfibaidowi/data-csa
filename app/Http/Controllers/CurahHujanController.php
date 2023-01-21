@@ -30,6 +30,7 @@ class CurahHujanController extends Controller
             'id_region' =>"required|exists:App\Models\RegionModel,id_region",
             'tahun'     =>"required|date_format:Y",
             'bulan'     =>"required|integer|min:1|max:12",
+            'input_ke'  =>"required|integer|min:1|max:3",
             'curah_hujan'   =>"required|numeric",
             'curah_hujan_normal'=>"required|numeric"
         ]);
@@ -47,7 +48,8 @@ class CurahHujanController extends Controller
                 [
                     'id_region' =>$req['id_region'],
                     'tahun'     =>$req['tahun'],
-                    'bulan'     =>$req['bulan']
+                    'bulan'     =>$req['bulan'],
+                    'input_ke'  =>$req['input_ke']
                 ],
                 [
                     'curah_hujan'       =>$req['curah_hujan'],
@@ -95,6 +97,63 @@ class CurahHujanController extends Controller
 
         return response()->json([
             'status'=>"ok"
+        ]);
+    }
+
+    public function gets_kecamatan(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+        
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'tahun'     =>"required|date_format:Y",
+            'regency_id'=>[
+                Rule::requiredIf(!isset($req['regency_id'])),
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kabupaten_kota");
+                })
+            ],
+            'province_id'=>[
+                Rule::requiredIf(!isset($req['province_id'])),
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "provinsi");
+                })
+            ],
+            'pulau'     =>[
+                Rule::requiredIf(!isset($req['pulau']))
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $curah_hujan=CurahHujanRepo::gets_curah_hujan_kecamatan($req);
+        
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$curah_hujan['current_page'],
+            'last_page'     =>$curah_hujan['last_page'],
+            'data'          =>$curah_hujan['data']
         ]);
     }
 

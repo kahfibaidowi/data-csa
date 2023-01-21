@@ -72,6 +72,7 @@ $router->group(['prefix'=>'/curah_hujan', 'middleware'=>'auth'], function()use($
     $router->post("/", ['uses'=>"CurahHujanController@upsert"]);
     $router->delete("/{id}", ['uses'=>"CurahHujanController@delete"]);
     $router->get("/type/kabupaten_kota", ['uses'=>"CurahHujanController@gets_kabupaten_kota"]);
+    $router->get("/type/kecamatan", ['uses'=>"CurahHujanController@gets_kecamatan"]);
 });
 
 //EWS
@@ -79,6 +80,7 @@ $router->group(['prefix'=>'/ews', 'middleware'=>'auth'], function()use($router){
     $router->post("/", ['uses'=>"EwsController@upsert"]);
     $router->delete("/{id}", ['uses'=>"EwsController@delete"]);
     $router->get("/type/kabupaten_kota", ['uses'=>"EwsController@gets_kabupaten_kota"]);
+    $router->get("/type/kecamatan", ['uses'=>"EwsController@gets_kecamatan"]);
 });
 
 //frontpage

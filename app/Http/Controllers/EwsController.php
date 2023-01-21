@@ -31,6 +31,7 @@ class EwsController extends Controller
             'type'      =>"required",
             'tahun'     =>"required|date_format:Y",
             'bulan'     =>"required|integer|min:1|max:12",
+            'input_ke'  =>"required|integer|min:1|max:3",
             'opt_utama' =>[
                 Rule::requiredIf(!isset($req['opt_utama'])),
                 "array",
@@ -53,7 +54,8 @@ class EwsController extends Controller
                     'id_region' =>$req['id_region'],
                     'type'      =>$req['type'],
                     'tahun'     =>$req['tahun'],
-                    'bulan'     =>$req['bulan']
+                    'bulan'     =>$req['bulan'],
+                    'input_ke'  =>$req['input_ke']
                 ],
                 [
                     'opt_utama' =>$req['opt_utama'],
@@ -101,6 +103,64 @@ class EwsController extends Controller
 
         return response()->json([
             'status'=>"ok"
+        ]);
+    }
+
+    public function gets_kecamatan(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+        
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'tahun'     =>"required|date_format:Y",
+            'type'      =>"required",
+            'regency_id'=>[
+                Rule::requiredIf(!isset($req['regency_id'])),
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kabupaten_kota");
+                })
+            ],
+            'province_id'=>[
+                Rule::requiredIf(!isset($req['province_id'])),
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "provinsi");
+                })
+            ],
+            'pulau'     =>[
+                Rule::requiredIf(!isset($req['pulau']))
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $ews=EwsRepo::gets_ews_kecamatan($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$ews['current_page'],
+            'last_page'     =>$ews['last_page'],
+            'data'          =>$ews['data']
         ]);
     }
 

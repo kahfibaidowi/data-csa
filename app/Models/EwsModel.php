@@ -15,6 +15,7 @@ class EwsModel extends Model{
         "type",
         "tahun",
         "bulan",
+        "input_ke",
         "opt_utama",
         "produksi"
     ];

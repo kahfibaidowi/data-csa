@@ -13,6 +13,7 @@ class CurahHujanModel extends Model{
         "id_region",
         "tahun",
         "bulan",
+        "input_ke",
         "curah_hujan",
         "curah_hujan_normal"
     ];

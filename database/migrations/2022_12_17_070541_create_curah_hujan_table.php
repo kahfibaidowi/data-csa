@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger("id_region")->comment("region provinsi/kabupaten kota/kecamatan");
             $table->integer("tahun");
             $table->integer("bulan");
+            $table->integer("input_ke");
             $table->double("curah_hujan");
             $table->double("curah_hujan_normal");
             $table->timestamps();
