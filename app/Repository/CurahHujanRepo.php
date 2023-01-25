@@ -72,7 +72,7 @@ class CurahHujanRepo{
         //query
         $query=RegionModel::where("type", "kabupaten_kota");
         $query=$query->with([
-            "curah_hujan"   =>function($q)use($params){
+            "curah_hujan_kabupaten_kota"=>function($q)use($params){
                 return $q->where("tahun", $params['tahun']);
             },
             "parent"
@@ -96,8 +96,101 @@ class CurahHujanRepo{
 
         $new_data=[];
         foreach($data['data'] as $val){
-            $new_data[]=array_merge_without($val, ['geo_json', 'parent'], [
-                'provinsi'  =>array_merge_without($val['parent'], ['geo_json'])
+            $curah_hujan=[];
+            for($i=1; $i<=12; $i++){
+                for($j=1; $j<=3; $j++){
+                    //curah hujan
+                    $filter_ch=array_filter($val['curah_hujan_kabupaten_kota'], function($obj)use($i, $j){
+                        return (strval($obj['bulan'])==strval($i) && strval($obj['input_ke'])==strval($j));
+                    });
+
+                    if(count($filter_ch)>0){
+                        $sum_curah_hujan=array_reduce($filter_ch, function($carry, $item){
+                            return $carry+=doubleval($item['curah_hujan']);
+                        }, 0);
+                        $sum_curah_hujan_normal=array_reduce($filter_ch, function($carry, $item){
+                            return $carry+=doubleval($item['curah_hujan_normal']);
+                        }, 0);
+
+                        $ch=[
+                            'tahun'     =>$params['tahun'],
+                            'bulan'     =>$i,
+                            'input_ke'  =>$j,
+                            'curah_hujan'       =>$sum_curah_hujan/count($filter_ch),
+                            'curah_hujan_normal'=>$sum_curah_hujan_normal/count($filter_ch)
+                        ];
+                        $curah_hujan[]=$ch;
+                    }
+                }
+            }
+
+            $new_data[]=array_merge_without($val, ['geo_json', 'parent', 'curah_hujan_kabupaten_kota'], [
+                'curah_hujan'   =>$curah_hujan,
+                'provinsi'      =>array_merge_without($val['parent'], ['geo_json'])
+            ]);
+        }
+
+        return array_merge($data, [
+            'data'  =>$new_data
+        ]);
+    }
+
+    public static function gets_curah_hujan_provinsi($params)
+    {
+        //params
+        $params['per_page']=trim($params['per_page']);
+        $params['pulau']=trim($params['pulau']);
+
+        //query
+        $query=RegionModel::where("type", "provinsi");
+        $query=$query->with([
+            "curah_hujan_provinsi"  =>function($q)use($params){
+                return $q->where("tahun", $params['tahun']);
+            }
+        ]);
+        $query=$query->where("region", "like", "%".$params['q']."%");
+        //--pulau
+        if($params['pulau']!=""){
+            $query=$query->where("data->pulau", $params['pulau']);
+        }
+        //--order
+        $query=$query->orderBy("region");
+
+        //return
+        $data=$query->paginate($params['per_page'])->toArray();
+
+        $new_data=[];
+        foreach($data['data'] as $val){
+            $curah_hujan=[];
+            for($i=1; $i<=12; $i++){
+                for($j=1; $j<=3; $j++){
+                    //curah hujan
+                    $filter_ch=array_filter($val['curah_hujan_provinsi'], function($obj)use($i, $j){
+                        return (strval($obj['bulan'])==strval($i) && strval($obj['input_ke'])==strval($j));
+                    });
+
+                    if(count($filter_ch)>0){
+                        $sum_curah_hujan=array_reduce($filter_ch, function($carry, $item){
+                            return $carry+=doubleval($item['curah_hujan']);
+                        }, 0);
+                        $sum_curah_hujan_normal=array_reduce($filter_ch, function($carry, $item){
+                            return $carry+=doubleval($item['curah_hujan_normal']);
+                        }, 0);
+
+                        $ch=[
+                            'tahun'     =>$params['tahun'],
+                            'bulan'     =>$i,
+                            'input_ke'  =>$j,
+                            'curah_hujan'       =>$sum_curah_hujan/count($filter_ch),
+                            'curah_hujan_normal'=>$sum_curah_hujan_normal/count($filter_ch)
+                        ];
+                        $curah_hujan[]=$ch;
+                    }
+                }
+            }
+
+            $new_data[]=array_merge_without($val, ['geo_json', 'curah_hujan_provinsi'], [
+                'curah_hujan'   =>$curah_hujan
             ]);
         }
 

@@ -21,6 +21,9 @@ return new class extends Migration
             $table->text("data")->nullable();
             $table->longText("geo_json");
             $table->timestamps();
+            
+            //fk
+            $table->foreign("nested")->references("id_region")->on("tbl_region")->onDelete("cascade");
         });
     }
 

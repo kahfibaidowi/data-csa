@@ -207,4 +207,49 @@ class CurahHujanController extends Controller
             'data'          =>$curah_hujan['data']
         ]);
     }
+
+    public function gets_provinsi(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+        
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'         =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'tahun'     =>"required|date_format:Y",
+            'pulau'     =>[
+                Rule::requiredIf(!isset($req['pulau']))
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $curah_hujan=CurahHujanRepo::gets_curah_hujan_provinsi($req);
+        
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$curah_hujan['current_page'],
+            'last_page'     =>$curah_hujan['last_page'],
+            'data'          =>$curah_hujan['data']
+        ]);
+    }
 }
