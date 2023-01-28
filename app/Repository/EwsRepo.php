@@ -139,7 +139,7 @@ class EwsRepo{
                             return $carry+=doubleval($item['produksi']);
                         }, 0);
                         $sum_opt=array_reduce($filter_ews, function($carry, $item){
-                            return $carry+=array_values(array_unique(array_merge($carry, $item['opt_utama'])));
+                            return array_values(array_unique(array_merge($carry, $item['opt_utama'])));
                         }, []);
 
                         $ews_item=[
@@ -232,7 +232,7 @@ class EwsRepo{
                             return $carry+=doubleval($item['produksi']);
                         }, 0);
                         $sum_opt=array_reduce($filter_ews, function($carry, $item){
-                            return $carry+=array_values(array_unique(array_merge($carry, $item['opt_utama'])));
+                            return array_values(array_unique(array_merge($carry, $item['opt_utama'])));
                         }, []);
 
                         $ews_item=[
@@ -250,6 +250,47 @@ class EwsRepo{
             $new_data[]=array_merge_without($val, ['geo_json', 'parent', 'ews_provinsi', 'curah_hujan_provinsi'], [
                 'curah_hujan'   =>$curah_hujan,
                 'ews'           =>$ews
+            ]);
+        }
+
+        return array_merge($data, [
+            'data'  =>$new_data
+        ]);
+    }
+
+    public static function gets_ews_treeview($params){
+        //query
+        $query=RegionModel::where("type", "provinsi");
+        $query=$query->with([
+            "kabupaten_kota",
+            "kabupaten_kota.kecamatan",
+            "kabupaten_kota.kecamatan.curah_hujan"=>function($q)use($params){
+                return $q->where("tahun", $params['tahun']);
+            },
+            "kabupaten_kota.kecamatan.ews"=>function($q)use($params){
+                return $q->where("tahun", $params['tahun'])->where("type", $params['type']);
+            }
+        ]);
+        $query=$query->orderBy("region");
+
+        //return
+        $data=$query->paginate()->toArray();
+
+        $new_data=[];
+        foreach($data['data'] as $val){
+            $kab_kota=[];
+            foreach($val['kabupaten_kota'] as $regency){
+                $kecamatan=[];
+                foreach($regency['kecamatan'] as $district){
+                    $kecamatan[]=array_merge_without($district, ['geo_json']);
+                }
+
+                $kab_kota[]=array_merge_without($regency, ['geo_json'], [
+                    'kecamatan' =>$kecamatan
+                ]);
+            }
+            $new_data[]=array_merge_without($val, ['geo_json'], [
+                'kabupaten_kota'=>$kab_kota
             ]);
         }
 

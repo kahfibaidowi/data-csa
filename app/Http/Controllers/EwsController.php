@@ -261,4 +261,39 @@ class EwsController extends Controller
             'data'          =>$ews['data']
         ]);
     }
+
+    public function gets_treeview(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+        
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'tahun'     =>"required|date_format:Y",
+            'type'      =>"required"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $ews=EwsRepo::gets_ews_treeview($req);
+        
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$ews['current_page'],
+            'last_page'     =>$ews['last_page'],
+            'data'          =>$ews['data']
+        ]);
+    }
 }

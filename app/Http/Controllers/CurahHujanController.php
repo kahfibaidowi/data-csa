@@ -252,4 +252,38 @@ class CurahHujanController extends Controller
             'data'          =>$curah_hujan['data']
         ]);
     }
+
+    public function gets_treeview(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+        
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'tahun'     =>"required|date_format:Y"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $curah_hujan=CurahHujanRepo::gets_curah_hujan_treeview($req);
+        
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$curah_hujan['current_page'],
+            'last_page'     =>$curah_hujan['last_page'],
+            'data'          =>$curah_hujan['data']
+        ]);
+    }
 }

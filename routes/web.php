@@ -74,6 +74,7 @@ $router->group(['prefix'=>'/curah_hujan', 'middleware'=>'auth'], function()use($
     $router->get("/type/kabupaten_kota", ['uses'=>"CurahHujanController@gets_kabupaten_kota"]);
     $router->get("/type/kecamatan", ['uses'=>"CurahHujanController@gets_kecamatan"]);
     $router->get("/type/provinsi", ['uses'=>"CurahHujanController@gets_provinsi"]);
+    $router->get("/type/treeview", ['uses'=>"CurahHujanController@gets_treeview"]);
 });
 
 //EWS
@@ -83,6 +84,7 @@ $router->group(['prefix'=>'/ews', 'middleware'=>'auth'], function()use($router){
     $router->get("/type/kabupaten_kota", ['uses'=>"EwsController@gets_kabupaten_kota"]);
     $router->get("/type/kecamatan", ['uses'=>"EwsController@gets_kecamatan"]);
     $router->get("/type/provinsi", ['uses'=>"EwsController@gets_provinsi"]);
+    $router->get("/type/treeview", ['uses'=>"EwsController@gets_treeview"]);
 });
 
 //frontpage

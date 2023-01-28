@@ -198,4 +198,43 @@ class CurahHujanRepo{
             'data'  =>$new_data
         ]);
     }
+
+    public static function gets_curah_hujan_treeview($params)
+    {
+        //query
+        $query=RegionModel::where("type", "provinsi");
+        $query=$query->with([
+            "kabupaten_kota",
+            "kabupaten_kota.kecamatan",
+            "kabupaten_kota.kecamatan.curah_hujan"=>function($q)use($params){
+                return $q->where("tahun", $params['tahun']);
+            },
+        ]);
+        $query=$query->orderBy("region");
+
+        //return
+        $data=$query->paginate()->toArray();
+
+        $new_data=[];
+        foreach($data['data'] as $val){
+            $kab_kota=[];
+            foreach($val['kabupaten_kota'] as $regency){
+                $kecamatan=[];
+                foreach($regency['kecamatan'] as $district){
+                    $kecamatan[]=array_merge_without($district, ['geo_json']);
+                }
+
+                $kab_kota[]=array_merge_without($regency, ['geo_json'], [
+                    'kecamatan' =>$kecamatan
+                ]);
+            }
+            $new_data[]=array_merge_without($val, ['geo_json'], [
+                'kabupaten_kota'=>$kab_kota
+            ]);
+        }
+
+        return array_merge($data, [
+            'data'  =>$new_data
+        ]);
+    }
 }
