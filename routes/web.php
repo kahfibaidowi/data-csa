@@ -91,5 +91,6 @@ $router->group(['prefix'=>'/ews', 'middleware'=>'auth'], function()use($router){
 $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/summary/type/ews_produksi", ['uses'=>"FrontpageController@get_summary_ews_produksi"]);
     $router->get("/summary/type/sifat_hujan_kabupaten_kota", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kabupaten_kota"]);
+    $router->get("/summary/type/sifat_hujan_kecamatan", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kecamatan"]);
     $router->get("/region/type/provinsi", ['uses'=>"FrontpageController@gets_region_provinsi"]);
 });

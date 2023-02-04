@@ -58,6 +58,29 @@ class FrontpageController extends Controller
         ]);
     }
 
+    public function get_summary_sifat_hujan_kecamatan(Request $request)
+    {
+        $req=$request->all();
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'tahun' =>"required|date_format:Y"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $summary=FrontpageRepo::get_summary_sifat_hujan_kecamatan($req);
+
+        return response()->json([
+            'data'  =>$summary
+        ]);
+    }
+
     public function gets_region_provinsi(Request $request)
     {
         $req=$request->all();
