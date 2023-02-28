@@ -70,6 +70,7 @@ $router->group(['prefix'=>'/opt', 'middleware'=>'auth'], function()use($router){
 //CURAH HUJAN
 $router->group(['prefix'=>'/curah_hujan', 'middleware'=>'auth'], function()use($router){
     $router->post("/", ['uses'=>"CurahHujanController@upsert"]);
+    $router->post("/type/multiple", ['uses'=>"CurahHujanController@upsert_multiple"]);
     $router->delete("/{id}", ['uses'=>"CurahHujanController@delete"]);
     $router->get("/type/kabupaten_kota", ['uses'=>"CurahHujanController@gets_kabupaten_kota"]);
     $router->get("/type/kecamatan", ['uses'=>"CurahHujanController@gets_kecamatan"]);
@@ -93,4 +94,10 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/summary/type/sifat_hujan_kabupaten_kota", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kabupaten_kota"]);
     $router->get("/summary/type/sifat_hujan_kecamatan", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kecamatan"]);
     $router->get("/region/type/provinsi", ['uses'=>"FrontpageController@gets_region_provinsi"]);
+});
+
+//test
+$router->group(['prefix'=>"/test"], function()use($router){
+    $router->get("/json", ['uses'=>"TestController@gets_json"]);
+    $router->get("/json/update", ['uses'=>"TestController@update"]);
 });

@@ -48,7 +48,8 @@ class CurahHujanRepo{
 
         //return
         $data=$query->paginate($params['per_page'])->toArray();
-
+        return $data;
+        
         $new_data=[];
         foreach($data['data'] as $val){
             $new_data[]=array_merge_without($val, ['geo_json', 'parent'], [

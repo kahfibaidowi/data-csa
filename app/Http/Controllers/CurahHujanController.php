@@ -65,6 +65,62 @@ class CurahHujanController extends Controller
             'data'  =>$curah_hujan
         ]);
     }
+
+    public function upsert_multiple(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'tahun'     =>"required|date_format:Y",
+            'data'      =>[
+                Rule::requiredIf(!isset($req['data'])),
+                "array",
+                "min:0"
+            ],
+            'data.*.id_region'  =>"required|exists:App\Models\RegionModel,id_region",
+            'data.*.bulan'      =>"required|integer|min:1|max:12",
+            'data.*.input_ke'   =>"required|integer|min:1|max:3",
+            'data.*.curah_hujan'=>"required|numeric",
+            'data.*.curah_hujan_normal' =>"required|numeric"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        DB::transaction(function() use($req){
+            foreach($req['data'] as $val){
+                CurahHujanModel::updateOrCreate(
+                    [
+                        'id_region' =>$val['id_region'],
+                        'tahun'     =>$req['tahun'],
+                        'bulan'     =>$val['bulan'],
+                        'input_ke'  =>$val['input_ke']
+                    ],
+                    [
+                        'curah_hujan'       =>$val['curah_hujan'],
+                        'curah_hujan_normal'=>$val['curah_hujan_normal'],
+                    ]
+                );
+            }
+        });
+
+        return response()->json([
+            'status'=>"ok"
+        ]);
+    }
     
     public function delete(Request $request, $id)
     {
