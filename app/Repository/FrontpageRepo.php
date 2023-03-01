@@ -25,7 +25,6 @@ class FrontpageRepo{
     {
         $kab_kota=RegionModel::select("id_region", "region", "nested", "type", "geo_json")
             ->where("type", "kabupaten_kota")
-            ->limit(1)
             ->get()
             ->toArray();
         $kecamatan=RegionModel::select("id_region", "region", "nested", "data", "type")
