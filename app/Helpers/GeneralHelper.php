@@ -84,6 +84,19 @@ function array_find_by_key($array=[], $key, $value)
     }
     return false;
 }
+function array_find($array=[], $key, $value){
+    $i=0;
+    foreach($array as $element){
+        if($element[$key]==$value){
+            return [
+                'data'  =>$element,
+                'index' =>$i
+            ];
+        }
+        $i++;
+    }
+    return false;
+}
 function array_merge_without($array, $without=[], $merge=[])
 {
     $new_array=$array;

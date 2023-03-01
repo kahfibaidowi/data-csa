@@ -16,7 +16,7 @@ class TestController extends Controller
     {
         $req=$request->all();
 
-        if(false){
+        if(true){
             return response()->json([
                 'status'=>"not allowed"
             ]);
@@ -74,7 +74,7 @@ class TestController extends Controller
     public function update(Request $request){
         $req=$request->all();
 
-        if(false){
+        if(true){
             return response()->json([
                 'status'=>"not allowed"
             ]);

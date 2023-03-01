@@ -337,9 +337,9 @@ class CurahHujanController extends Controller
         
         return response()->json([
             'first_page'    =>1,
-            'current_page'  =>$curah_hujan['current_page'],
-            'last_page'     =>$curah_hujan['last_page'],
-            'data'          =>$curah_hujan['data']
+            'current_page'  =>1,
+            'last_page'     =>1,
+            'data'          =>$curah_hujan
         ]);
     }
 }

@@ -291,9 +291,9 @@ class EwsController extends Controller
         
         return response()->json([
             'first_page'    =>1,
-            'current_page'  =>$ews['current_page'],
-            'last_page'     =>$ews['last_page'],
-            'data'          =>$ews['data']
+            'current_page'  =>1,
+            'last_page'     =>1,
+            'data'          =>$ews
         ]);
     }
 }
