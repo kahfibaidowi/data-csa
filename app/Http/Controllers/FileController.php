@@ -31,7 +31,9 @@ class FileController extends Controller
         }
 
         //SUCCESS
-        $file=$login_data['id_user']."__".date("YmdHis")."__".preg_replace("/\s+/", "-", $request->file("dokumen")->getClientOriginalName());
+        $name=preg_replace("/[^A-Za-z0-9 ]/", '', $request->file("dokumen")->getClientOriginalName());
+        $name=preg_replace("/\s+/", "-", $name);
+        $file=$login_data['id_user']."__".date("YmdHis")."__".$name;
         $file_name=$request->file("dokumen")->getClientOriginalName();
         $file_size=$request->file("dokumen")->getSize();
 

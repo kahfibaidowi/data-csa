@@ -89,10 +89,23 @@ $router->group(['prefix'=>'/ews', 'middleware'=>'auth'], function()use($router){
 });
 
 //frontpage
+$router->group(['prefix'=>"/frontpage_admin", 'middleware'=>'auth'], function()use($router){
+    $router->post("/widget", ['uses'=>"FrontpageController@upsert_widget"]);
+    $router->get("/widget", ['uses'=>"FrontpageController@get_widget"]);
+    $router->post("/post", ['uses'=>"FrontpageController@add_post"]);
+    $router->get("/post", ['uses'=>"FrontpageController@gets_post"]);
+    $router->get("/post/{id}", ['uses'=>"FrontpageController@get_post"]);
+    $router->put("/post/{id}", ['uses'=>"FrontpageController@update_post"]);
+    $router->delete("/post/{id}", ['uses'=>"FrontpageController@delete_post"]);
+    $router->get("/post_kategori", ['uses'=>"FrontpageController@gets_post_kategori"]);
+});
+
+//frontpage
 $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/summary/type/ews_produksi", ['uses'=>"FrontpageController@get_summary_ews_produksi"]);
     $router->get("/summary/type/sifat_hujan_kabupaten_kota", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kabupaten_kota"]);
     $router->get("/summary/type/sifat_hujan_kecamatan", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kecamatan"]);
+    $router->get("/summary/type/jadwal_tanam_kecamatan", ['uses'=>"FrontpageController@get_jadwal_tanam_kecamatan"]);
     $router->get("/region/type/provinsi", ['uses'=>"FrontpageController@gets_region_provinsi"]);
 });
 
@@ -100,4 +113,7 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
 $router->group(['prefix'=>"/test"], function()use($router){
     $router->get("/json", ['uses'=>"TestController@gets_json"]);
     $router->get("/json/update", ['uses'=>"TestController@update"]);
+    $router->get("/json/test_paginate", ['uses'=>"TestController@test_paginate"]);
+    $router->get("/json/update_center", ['uses'=>"TestController@update_center"]);
+    $router->get("/json/get_center", ['uses'=>"TestController@get_center"]);
 });

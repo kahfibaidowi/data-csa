@@ -94,4 +94,61 @@ class TestController extends Controller
             ]);
         }
     }
+
+    public function test_paginate(Request $request){
+        $req=$request->all();
+
+        if(true){
+            return response()->json([
+                'status'=>"not allowed"
+            ]);
+        }
+
+        $data=DB::table("tbl_region")->select("region")->where("type", "kabupaten_kota")->orderBy("region")->paginate(10);
+
+        return response()->json(['data'=>$data]);
+    }
+
+    public function update_center(Request $request){
+        $req=$request->all();
+
+        if(true){
+            return response()->json([
+                'status'=>"not allowed"
+            ]);
+        }
+
+        //SUCCESS
+        $json=file_get_contents("http://localhost/data-csa/public/center.json");
+        $json=json_decode($json, true);
+
+        foreach($json as $v){
+            $region=RegionModel::where("id_region", $v['id_region'])->lockForUpdate()->first();
+            
+            $region->update([
+                'geo_json'  =>array_merge($region['geo_json'], [
+                    'map_center'=>[
+                        'latitude'  =>$v['center'][1],
+                        'longitude' =>$v['center'][0],
+                        'zoom'      =>10
+                    ]
+                ])
+            ]);
+        }
+    }
+
+    public function get_center(Request $request){
+        $req=$request->all();
+
+        if(true){
+            return response()->json([
+                'status'=>"not allowed"
+            ]);
+        }
+
+        //SUCCESS
+        $v=RegionModel::select("geo_json->map_center as map_center")->where("id_region", "2")->first();
+        $v['map_center']=json_decode($v['map_center'], true);
+        echo $v['map_center']['latitude'];
+    }
 }

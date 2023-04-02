@@ -209,10 +209,14 @@ class CurahHujanRepo{
             ->toArray();
         $kab_kota=RegionModel::select("id_region", "region", "nested", "type")
             ->where("type", "kabupaten_kota")
+            ->orderBy("nested")
+            ->orderBy("region")
             ->get()
             ->toArray();
         $kecamatan=RegionModel::select("id_region", "region", "nested", "data", "type")
             ->where("type", "kecamatan")
+            ->orderBy("nested")
+            ->orderBy("region")
             ->get()
             ->toArray();
 
