@@ -7,6 +7,7 @@ use App\Models\CurahHujanModel;
 use App\Models\RegionModel;
 use App\Models\EwsModel;
 use App\Models\FrontpageModel;
+use App\Models\SebaranOptModel;
 
 
 class FrontpageRepo{
@@ -194,6 +195,78 @@ class FrontpageRepo{
 
         //return
         return $query->get();
+    }
+
+    public static function gets_sebaran_opt($params)
+    {
+        //params
+        $params['per_page']=isset($params['per_page'])?trim($params['per_page']):"";
+        $params['komoditas']=isset($params['komoditas'])?trim($params['komoditas']):"";
+        $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
+        $params['bulan']=isset($params['bulan'])?trim($params['bulan']):"";
+        $params['provinsi']=isset($params['provinsi'])?trim($params['provinsi']):"";
+        $params['kab_kota']=isset($params['kab_kota'])?trim($params['kab_kota']):"";
+
+        //query
+        //--sebaran opt
+        $q_sebaran=SebaranOptModel::query();
+        if($params['komoditas']!=""){
+            $q_sebaran=$q_sebaran->where("komoditas", $params['komoditas']);
+        }
+        if($params['tahun']!=""){
+            $q_sebaran=$q_sebaran->where("tahun", $params['tahun']);
+        }
+        if($params['bulan']!=""){
+            $q_sebaran=$q_sebaran->where("bulan", $params['bulan']);
+        }
+        if($params['provinsi']!=""){
+            $q_sebaran=$q_sebaran->where("provinsi", $params['provinsi']);
+        }
+        if($params['kab_kota']!=""){
+            $q_sebaran=$q_sebaran->where("kab_kota", $params['kab_kota']);
+        }
+        $sebaran=$q_sebaran->paginate($params['per_page']);
+
+        //--infografis
+        $q_infografis=SebaranOptModel::query();
+        $q_infografis->selectRaw("ifnull(sum(lts_ringan), 0) as sum_lts_ringan, 
+                                    ifnull(sum(lts_sedang), 0) as sum_lts_sedang, 
+                                    ifnull(sum(lts_berat), 0) as sum_lts_berat, 
+                                    ifnull(sum(sum_lts), 0) as sum_sum_lts, 
+                                    ifnull(sum(lts_puso), 0) as sum_lts_puso");
+        if($params['komoditas']!=""){
+            $q_infografis=$q_infografis->where("komoditas", $params['komoditas']);
+        }
+        if($params['tahun']!=""){
+            $q_infografis=$q_infografis->where("tahun", $params['tahun']);
+        }
+        if($params['bulan']!=""){
+            $q_infografis=$q_infografis->where("bulan", $params['bulan']);
+        }
+        if($params['provinsi']!=""){
+            $q_infografis=$q_infografis->where("provinsi", $params['provinsi']);
+        }
+        if($params['kab_kota']!=""){
+            $q_infografis=$q_infografis->where("kab_kota", $params['kab_kota']);
+        }
+        $infografis=$q_infografis->first();
+
+        //return
+        return [
+            'data'      =>$sebaran->toArray(),
+            'infografis'=>$infografis->toArray()
+        ];
+    }
+
+    public static function gets_sebaran_region()
+    {
+        $provinsi=SebaranOptModel::select("provinsi")->groupBy("provinsi");
+        $kab_kota=SebaranOptModel::select("provinsi", "kab_kota")->groupBy("provinsi", "kab_kota");
+
+        return [
+            'provinsi'  =>$provinsi->get(),
+            'kab_kota'  =>$kab_kota->get()
+        ];
     }
 
     //ADMIN

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Models\RegionModel;
 use App\Repository\FrontpageRepo;
+use App\Models\SebaranOptModel;
 
 class TestController extends Controller
 {
@@ -150,5 +151,35 @@ class TestController extends Controller
         $v=RegionModel::select("geo_json->map_center as map_center")->where("id_region", "2")->first();
         $v['map_center']=json_decode($v['map_center'], true);
         echo $v['map_center']['latitude'];
+    }
+
+    public function import_sebaran_opt(Request $request){
+        $req=$request->all();
+
+        if(true){
+            return response()->json([
+                'status'=>"not allowed"
+            ]);
+        }
+
+        //SUCCESS
+        $json=file_get_contents("http://localhost/latihan/data_opt.json");
+        $json=json_decode($json, true);
+
+        foreach($json as $v){
+            SebaranOptModel::create([
+                'bulan'     =>$v['bulan'],
+                'tahun'     =>$v['tahun'],
+                'provinsi'  =>$v['provinsi'],
+                'kab_kota'  =>$v['kab_kota'],
+                'opt'       =>$v['opt'],
+                'komoditas' =>$v['komoditas'],
+                'lts_berat' =>is_numeric($v['lts_berat'])?$v['lts_berat']:0,
+                'lts_puso'  =>is_numeric($v['lts_puso'])?$v['lts_puso']:0,
+                'lts_ringan'=>is_numeric($v['lts_ringan'])?$v['lts_ringan']:0,
+                'lts_sedang'=>is_numeric($v['lts_sedang'])?$v['lts_sedang']:0,
+                'sum_lts'   =>is_numeric($v['sum_total_lts'])?$v['sum_total_lts']:0
+            ]);
+        }
     }
 }

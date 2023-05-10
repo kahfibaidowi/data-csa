@@ -124,6 +124,50 @@ class FrontpageController extends Controller
         ]);
     }
 
+    public function gets_sebaran_opt(Request $request)
+    {
+        $req=$request->all();
+        
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>"nullable|integer|min:1",
+            'komoditas' =>"nullable",
+            'tahun'     =>"nullable|date_format:Y",
+            'bulan'     =>"nullable|between:1,12",
+            'provinsi'  =>"nullable",
+            'kab_kota'  =>"nullable"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $sebaran_opt=FrontpageRepo::gets_sebaran_opt($req);
+
+        return response()->json([
+            'data'  =>[
+                'first_page'    =>1,
+                'current_page'  =>$sebaran_opt['data']['current_page'],
+                'last_page'     =>$sebaran_opt['data']['last_page'],
+                'data'          =>$sebaran_opt['data']['data']
+            ],
+            'infografis'        =>$sebaran_opt['infografis']
+        ]);
+    }
+
+    public function gets_sebaran_opt_region(Request $request)
+    {
+        //SUCCESS
+        $sebaran_region=FrontpageRepo::gets_sebaran_region();
+
+        return response()->json([
+            'data'  =>$sebaran_region
+        ]);
+    }
+
     //ADMIN
     public function upsert_widget(Request $request)
     {

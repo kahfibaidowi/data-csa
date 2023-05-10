@@ -107,6 +107,8 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/summary/type/sifat_hujan_kecamatan", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kecamatan"]);
     $router->get("/summary/type/jadwal_tanam_kecamatan", ['uses'=>"FrontpageController@get_jadwal_tanam_kecamatan"]);
     $router->get("/region/type/provinsi", ['uses'=>"FrontpageController@gets_region_provinsi"]);
+    $router->get("/sebaran_opt", ['uses'=>"FrontpageController@gets_sebaran_opt"]);
+    $router->get("/sebaran_opt/region", ['uses'=>"FrontpageController@gets_sebaran_opt_region"]);
 });
 
 //test
@@ -116,4 +118,5 @@ $router->group(['prefix'=>"/test"], function()use($router){
     $router->get("/json/test_paginate", ['uses'=>"TestController@test_paginate"]);
     $router->get("/json/update_center", ['uses'=>"TestController@update_center"]);
     $router->get("/json/get_center", ['uses'=>"TestController@get_center"]);
+    $router->get("/json/import_sebaran_opt", ['uses'=>"TestController@import_sebaran_opt"]);
 });
