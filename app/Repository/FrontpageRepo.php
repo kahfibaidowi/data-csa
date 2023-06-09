@@ -128,7 +128,7 @@ class FrontpageRepo{
     public static function get_jadwal_tanam_kecamatan($params)
     {
         //PARAMS
-        $params['per_page']=isset($params['per_page'])?trim($params['per_page']):env("DB_ROW_LIMIT");
+        $params['per_page']=!empty($params['per_page'])?trim($params['per_page']):env("DB_ROW_LIMIT");
         $params['q']=isset($params['q'])?trim($params['q']):"";
 
         //QUERY
@@ -182,6 +182,13 @@ class FrontpageRepo{
         }
         unset($curah_hujan);
         
+        //kecamatan
+        foreach($kecamatan['data'] as &$kec){
+            if(!isset($kec['curah_hujan'])){
+                $kec['curah_hujan']=[];
+            }
+        }
+        
         //return
         return $kecamatan;
     }
@@ -197,6 +204,35 @@ class FrontpageRepo{
         return $query->get();
     }
 
+    public static function gets_region_kabupaten_kota($params)
+    {
+        //params
+        $params['province_id']=isset($params['province_id'])?trim($params['province_id']):"";
+
+        //query
+        $query=RegionModel::select("id_region", "nested", "region", "data", "geo_json")->where("type", "kabupaten_kota");
+        //--province
+        if($params['province_id']!=""){
+            $query=$query->where("nested", $params['province_id']);
+        }
+        //--order
+        $query=$query->orderBy("region");
+
+        //data
+        $data=$query->get()->toArray();
+
+        $new_data=[];
+        foreach($data as $val){
+            $new_data[]=array_merge($val, [
+                'geo_json'=>[
+                    'map_center'=>$val['geo_json']['map_center']
+                ]
+            ]);
+        }
+
+        return $new_data;
+    }
+
     public static function gets_sebaran_opt($params)
     {
         //params
@@ -204,12 +240,20 @@ class FrontpageRepo{
         $params['komoditas']=isset($params['komoditas'])?trim($params['komoditas']):"";
         $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
         $params['bulan']=isset($params['bulan'])?trim($params['bulan']):"";
-        $params['provinsi']=isset($params['provinsi'])?trim($params['provinsi']):"";
-        $params['kab_kota']=isset($params['kab_kota'])?trim($params['kab_kota']):"";
+        $params['province_id']=isset($params['province_id'])?trim($params['province_id']):"";
+        $params['regency_id']=isset($params['regency_id'])?trim($params['regency_id']):"";
 
         //query
         //--sebaran opt
-        $q_sebaran=SebaranOptModel::query();
+        $q_sebaran=SebaranOptModel::with("region:id_region,nested,region", "region.parent:id_region,nested,region");
+        if($params['province_id']!=""){
+            $q_sebaran=$q_sebaran->whereHas("region", function($q)use($params){
+                $q->where("nested", $params['province_id']);
+            });
+        }
+        if($params['regency_id']!=""){
+            $q_sebaran=$q_sebaran->where("id_region", $params['regency_id']);
+        }
         if($params['komoditas']!=""){
             $q_sebaran=$q_sebaran->where("komoditas", $params['komoditas']);
         }
@@ -218,12 +262,6 @@ class FrontpageRepo{
         }
         if($params['bulan']!=""){
             $q_sebaran=$q_sebaran->where("bulan", $params['bulan']);
-        }
-        if($params['provinsi']!=""){
-            $q_sebaran=$q_sebaran->where("provinsi", $params['provinsi']);
-        }
-        if($params['kab_kota']!=""){
-            $q_sebaran=$q_sebaran->where("kab_kota", $params['kab_kota']);
         }
         $sebaran=$q_sebaran->paginate($params['per_page']);
 
@@ -243,11 +281,13 @@ class FrontpageRepo{
         if($params['bulan']!=""){
             $q_infografis=$q_infografis->where("bulan", $params['bulan']);
         }
-        if($params['provinsi']!=""){
-            $q_infografis=$q_infografis->where("provinsi", $params['provinsi']);
+        if($params['province_id']!=""){
+            $q_infografis=$q_infografis->whereHas("region", function($q)use($params){
+                $q->where("nested", $params['province_id']);
+            });
         }
-        if($params['kab_kota']!=""){
-            $q_infografis=$q_infografis->where("kab_kota", $params['kab_kota']);
+        if($params['regency_id']!=""){
+            $q_infografis=$q_infografis->where("id_region", $params['regency_id']);
         }
         $infografis=$q_infografis->first();
 
@@ -260,13 +300,104 @@ class FrontpageRepo{
 
     public static function gets_sebaran_region()
     {
-        $provinsi=SebaranOptModel::select("provinsi")->groupBy("provinsi");
-        $kab_kota=SebaranOptModel::select("provinsi", "kab_kota")->groupBy("provinsi", "kab_kota");
+        $provinsi=RegionModel::select("id_region", "region")->where("type", "provinsi");
+        $kab_kota=RegionModel::select("id_region", "nested", "region")->where("type", "kabupaten_kota");
 
         return [
             'provinsi'  =>$provinsi->get(),
             'kab_kota'  =>$kab_kota->get()
         ];
+    }
+
+    public static function gets_region_sebaran_opt($params)
+    {
+        //params
+        $params['per_page']=isset($params['per_page'])?trim($params['per_page']):"";
+        $params['komoditas']=isset($params['komoditas'])?trim($params['komoditas']):"";
+        $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
+        $params['bulan']=isset($params['bulan'])?trim($params['bulan']):"";
+        $params['province_id']=isset($params['province_id'])?trim($params['province_id']):"";
+
+
+        $q_region=RegionModel::where("type", "kabupaten_kota");
+        $q_region=$q_region->with([
+            "parent:id_region,nested,region",
+            "sebaran_opt"   =>function($q)use($params){
+                if($params['komoditas']!=""){
+                    $q->where("komoditas", $params['komoditas']);
+                }
+                if($params['tahun']!=""){
+                    $q->where("tahun", $params['tahun']);
+                }
+                if($params['bulan']!=""){
+                    $q->where("bulan", $params['bulan']);
+                }
+            }
+        ]);
+        if($params['province_id']!=""){
+            $q_region=$q_region->where("nested", $params['province_id']);
+        }
+        $sebaran=$q_region->paginate($params['per_page']);
+
+        return $sebaran->toArray();
+    }
+    
+    public static function gets_curah_hujan_kecamatan($params)
+    {
+        //params
+        $params['regency_id']=isset($params['regency_id'])?trim($params['regency_id']):"";
+
+
+        $kecamatan=RegionModel::select("id_region", "region", "nested", "data", "geo_json", "type")
+            ->where("type", "kecamatan");
+        //--regency
+        if($params['regency_id']!=""){
+            $kecamatan=$kecamatan->where("nested", $params['regency_id']);
+        }
+        $kecamatan=$kecamatan->orderBy("nested")
+            ->orderBy("region")
+            ->get()
+            ->toArray();
+
+        $curah_hujan=DB::table("tbl_curah_hujan")
+            ->select("id_curah_hujan", "id_region", "tahun", "bulan", "input_ke", "curah_hujan", "curah_hujan_normal")
+            ->where("tahun", $params['tahun'])
+            ->orderBy("id_region")
+            ->get();
+        $curah_hujan=json_decode(json_encode($curah_hujan), true);
+
+        //process
+        //--curah hujan
+        $set_region=[
+            'id_region' =>"-1",
+            'index'     =>-1
+        ];
+        foreach($curah_hujan as $ch){
+            if($ch['id_region']==$set_region['id_region']){
+                $kecamatan[$set_region['index']]['curah_hujan']=array_merge($kecamatan[$set_region['index']]['curah_hujan'], [$ch]);
+            }
+            else{
+                $find_kecamatan=array_find($kecamatan, "id_region", $ch['id_region']);
+                if($find_kecamatan!==false){
+                    $kecamatan[$find_kecamatan['index']]['curah_hujan']=[$ch];
+                    $set_region=[
+                        'id_region' =>$ch['id_region'],
+                        'index'     =>$find_kecamatan['index']
+                    ];
+                }
+            }
+        }
+        unset($curah_hujan);
+
+        //--kecamatan
+        foreach($kecamatan as &$kec){
+            if(!isset($kec['curah_hujan'])){
+                $kec['curah_hujan']=[];
+            }
+        }
+        
+        //return
+        return $kecamatan;
     }
 
     //ADMIN

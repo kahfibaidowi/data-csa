@@ -124,6 +124,34 @@ class FrontpageController extends Controller
         ]);
     }
 
+    public function gets_region_kabupaten_kota(Request $request)
+    {
+        $req=$request->all();
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'province_id'   =>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "provinsi");
+                })
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $kabkota=FrontpageRepo::gets_region_kabupaten_kota($req);
+
+        return response()->json([
+            'data'  =>$kabkota
+        ]);
+    }
+
     public function gets_sebaran_opt(Request $request)
     {
         $req=$request->all();
@@ -134,8 +162,18 @@ class FrontpageController extends Controller
             'komoditas' =>"nullable",
             'tahun'     =>"nullable|date_format:Y",
             'bulan'     =>"nullable|between:1,12",
-            'provinsi'  =>"nullable",
-            'kab_kota'  =>"nullable"
+            'province_id'=>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "provinsi");
+                })
+            ],
+            'regency_id'=>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kabupaten_kota");
+                })
+            ]
         ]);
         if($validation->fails()){
             return response()->json([
@@ -165,6 +203,70 @@ class FrontpageController extends Controller
 
         return response()->json([
             'data'  =>$sebaran_region
+        ]);
+    }
+
+    public function gets_region_sebaran_opt(Request $request)
+    {
+        $req=$request->all();
+        
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>"nullable|integer|min:1",
+            'komoditas' =>"nullable",
+            'tahun'     =>"nullable|date_format:Y",
+            'bulan'     =>"nullable|between:1,12",
+            'province_id'=>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "provinsi");
+                })
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $region=FrontpageRepo::gets_region_sebaran_opt($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$region['current_page'],
+            'last_page'     =>$region['last_page'],
+            'data'          =>$region['data']
+        ]);
+    }
+
+    public function gets_curah_hujan_kecamatan(Request $request)
+    {
+        $req=$request->all();
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'tahun'         =>"required|date_format:Y",
+            'regency_id'    =>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kabupaten_kota");
+                })
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $curah_hujan=FrontpageRepo::gets_curah_hujan_kecamatan($req);
+
+        return response()->json([
+            'data'  =>$curah_hujan
         ]);
     }
 

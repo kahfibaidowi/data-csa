@@ -106,9 +106,12 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/summary/type/sifat_hujan_kabupaten_kota", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kabupaten_kota"]);
     $router->get("/summary/type/sifat_hujan_kecamatan", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kecamatan"]);
     $router->get("/summary/type/jadwal_tanam_kecamatan", ['uses'=>"FrontpageController@get_jadwal_tanam_kecamatan"]);
+    $router->get("/summary/type/curah_hujan_kecamatan", ['uses'=>"FrontpageController@gets_curah_hujan_kecamatan"]);
     $router->get("/region/type/provinsi", ['uses'=>"FrontpageController@gets_region_provinsi"]);
+    $router->get("/region/type/kabupaten_kota", ['uses'=>"FrontpageController@gets_region_kabupaten_kota"]);
     $router->get("/sebaran_opt", ['uses'=>"FrontpageController@gets_sebaran_opt"]);
     $router->get("/sebaran_opt/region", ['uses'=>"FrontpageController@gets_sebaran_opt_region"]);
+    $router->get("/region/data/sebaran_opt", ['uses'=>"FrontpageController@gets_region_sebaran_opt"]);
 });
 
 //test
@@ -119,4 +122,5 @@ $router->group(['prefix'=>"/test"], function()use($router){
     $router->get("/json/update_center", ['uses'=>"TestController@update_center"]);
     $router->get("/json/get_center", ['uses'=>"TestController@get_center"]);
     $router->get("/json/import_sebaran_opt", ['uses'=>"TestController@import_sebaran_opt"]);
+    $router->get("/json/update_sebaran_opt", ['uses'=>"TestController@update_sebaran_opt"]);
 });

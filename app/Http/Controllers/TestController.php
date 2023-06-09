@@ -182,4 +182,86 @@ class TestController extends Controller
             ]);
         }
     }
+
+    public function update_sebaran_opt(Request $request){
+        $req=$request->all();
+
+        if(false){
+            return response()->json([
+                'status'=>"not allowed"
+            ]);
+        }
+
+        $json=file_get_contents("http://localhost/latihan/tbl_region.json");
+        $json=json_decode($json, true);
+
+        $reg=$json[2]['data'];
+        $new_reg=[];
+        foreach($reg as $r){
+            if($r['type']=="kabupaten_kota"){
+                $new_reg[]=$r;
+            }
+        }
+
+        //return response()->json(['data'=>$new_reg]);
+
+        function search_region($array, $str){
+            foreach ($array as $key=>$val) {
+                if($val['region']===$str){
+                    return $key;
+                }
+            }
+            return -1;
+        }
+
+        $sebaran=SebaranOptModel::where("id_region", null)->limit(100000)->get();
+        $region=$new_reg;
+
+        foreach($region as &$reg){
+            $reg['region']=str_replace(" ", "", $reg['region']);
+            $reg['region']=str_replace("-", "", $reg['region']);
+        }
+
+        $count_not_found=0;
+        $not_found=[];
+        foreach($sebaran as &$seb){
+            $replace=str_replace("Kabupaten ", "", $seb['kab_kota']);
+            $replace=str_replace(" ", "", $replace);
+            $replace=str_replace("-", "", $replace);
+            $upper=strtoupper($replace);
+
+            $key=search_region($region, $upper);
+            if($key==-1){
+                $count_not_found++;
+                $not_found[]=$seb;
+            }
+            else{
+                SebaranOptModel::where("id_sebaran_opt", $seb['id_sebaran_opt'])
+                    ->update([
+                        'id_region' =>$region[$key]['id_region']
+                    ]);
+            }
+            
+        }
+
+        echo "<table border='1' style='border-collapse:collapse'>";
+        foreach($not_found as $seb){
+            echo "<tr>";
+            echo "<td>".$seb['kab_kota']."</td>";
+            echo "<td></td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+
+        // return response()->json([
+        //     'not_found' =>$count_not_found,
+        //     'sebaran'   =>[]
+        // ]);
+
+        // return response()->json([
+        //     'data'  =>$sebaran,
+        //     'not_found' =>$not_found,
+        //     'count' =>$count_not_found
+        // ]);
+    }
 }

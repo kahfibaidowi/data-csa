@@ -101,4 +101,9 @@ class RegionModel extends Model{
             ]
         );
     }
+
+    //--sebaran opt
+    public function sebaran_opt(){
+        return $this->hasMany(SebaranOptModel::class, "id_region", "id_region");
+    }
 }

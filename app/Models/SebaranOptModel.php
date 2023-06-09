@@ -12,6 +12,7 @@ class SebaranOptModel extends Model{
     protected $fillable=[
         "bulan",
         "tahun",
+        "id_region",
         "provinsi",
         "kab_kota",
         "komoditas",
@@ -29,4 +30,7 @@ class SebaranOptModel extends Model{
      *#FUNCTION
      *
      */
+    public function region(){
+        return $this->belongsTo(RegionModel::class, "id_region", "id_region");
+    }
 }
