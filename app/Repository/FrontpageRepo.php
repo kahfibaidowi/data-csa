@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Models\CurahHujanModel;
 use App\Models\RegionModel;
 use App\Models\EwsModel;
@@ -233,6 +234,35 @@ class FrontpageRepo{
         return $new_data;
     }
 
+    public static function gets_region_kecamatan($params)
+    {
+        //params
+        $params['regency_id']=isset($params['regency_id'])?trim($params['regency_id']):"";
+
+        //query
+        $query=RegionModel::select("id_region", "nested", "region", "data", "geo_json")->where("type", "kecamatan");
+        //--regency
+        if($params['regency_id']!=""){
+            $query=$query->where("nested", $params['regency_id']);
+        }
+        //--order
+        $query=$query->orderBy("region");
+
+        //data
+        $data=$query->get()->toArray();
+
+        $new_data=[];
+        foreach($data as $val){
+            $new_data[]=array_merge($val, [
+                'geo_json'=>[
+                    'map_center'=>$val['geo_json']['map_center']
+                ]
+            ]);
+        }
+
+        return $new_data;
+    }
+
     public static function gets_sebaran_opt($params)
     {
         //params
@@ -398,6 +428,87 @@ class FrontpageRepo{
         
         //return
         return $kecamatan;
+    }
+
+    public static function gets_geojson_curah_hujan_kecamatan($params)
+    {
+        //params
+        $params['regency_id']=isset($params['regency_id'])?trim($params['regency_id']):"";
+
+
+        //|kecamatan
+        $kecamatan=RegionModel::select("id_region", "region", "nested", "data", "geo_json", "type")
+            ->where("type", "kecamatan");
+        //--regency
+        if($params['regency_id']!=""){
+            $kecamatan=$kecamatan->where("nested", $params['regency_id']);
+        }
+        $kecamatan=$kecamatan
+            ->orderBy("region")
+            ->get()
+            ->toArray();
+
+        //|curah hujan
+        $curah_hujan=DB::table("tbl_curah_hujan as a")
+            ->join("tbl_region as b", "a.id_region", "=", "b.id_region")
+            ->select("a.id_region", "a.tahun", "a.bulan", "a.input_ke", "a.curah_hujan");
+        //--regency
+        if($params['regency_id']!=""){
+            $curah_hujan=$curah_hujan->where("b.nested", $params['regency_id']);
+        }
+        $curah_hujan=$curah_hujan
+            ->orderBy("a.id_region")
+            ->get();
+        $curah_hujan=json_decode(json_encode($curah_hujan), true);
+
+        //process
+        //--kecamatan
+        $features=[];
+        foreach($kecamatan as $kec){
+            $features[]=[
+                'type'      =>"Feature",
+                'properties'=>[
+                    'id_region'     =>$kec['id_region'],
+                    'region'        =>$kec['region'],
+                    'curah_hujan'   =>[],
+                    'map_center'    =>$kec['geo_json']['map_center']
+                ],
+                'geometry'  =>isset($kec['geo_json']['graph'])?$kec['geo_json']['graph']:['type'=>"MultiPolygon", 'coordinates'=>[]]
+            ];
+        }
+        unset($kecamatan);
+
+        //--curah hujan
+        $set_region=[
+            'id_region' =>"-1",
+            'index'     =>-1
+        ];
+        foreach($curah_hujan as $ch){
+            $ch_generated=$ch['tahun']."|".$ch['bulan']."|".$ch['input_ke']."|".$ch['curah_hujan'];
+            if($ch['id_region']==$set_region['id_region']){
+                $features[$set_region['index']]['properties']['curah_hujan']=array_merge($features[$set_region['index']]['properties']['curah_hujan'], [$ch_generated]);
+            }
+            else{
+                $find_kecamatan=array_find_properties($features, "id_region", $ch['id_region']);
+                if($find_kecamatan!==false){
+                    $features[$find_kecamatan['index']]['properties']['curah_hujan']=[$ch_generated];
+                    $set_region=[
+                        'id_region' =>$ch['id_region'],
+                        'index'     =>$find_kecamatan['index']
+                    ];
+                }
+            }
+        }
+        unset($curah_hujan);
+        
+        //return
+        $geojson=[
+            'type'      =>"FeatureCollection",
+            'name'      =>"curah_hujan_kecamatan",
+            'features'  =>$features
+        ];
+
+        return $geojson;
     }
 
     //ADMIN

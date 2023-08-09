@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-USE App\Models\FrontpageModel;
+use Carbon\Carbon;
+use App\Models\FrontpageModel;
 use App\Repository\FrontpageRepo;
 
 class FrontpageController extends Controller
@@ -264,6 +265,60 @@ class FrontpageController extends Controller
 
         //SUCCESS
         $curah_hujan=FrontpageRepo::gets_curah_hujan_kecamatan($req);
+
+        return response()->json([
+            'data'  =>$curah_hujan
+        ]);
+    }
+
+    public function gets_geojson_curah_hujan_kecamatan(Request $request)
+    {
+        $req=$request->all();
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'regency_id'    =>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kabupaten_kota");
+                })
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $geojson=FrontpageRepo::gets_geojson_curah_hujan_kecamatan($req);
+
+        return response()->json($geojson);
+    }
+
+    public function gets_region_kecamatan(Request $request)
+    {
+        $req=$request->all();
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'regency_id'    =>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kabupaten_kota");
+                })
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $curah_hujan=FrontpageRepo::gets_region_kecamatan($req);
 
         return response()->json([
             'data'  =>$curah_hujan
@@ -573,6 +628,54 @@ class FrontpageController extends Controller
 
         return response()->json([
             'data'  =>$kategori
+        ]);
+    }
+
+    public function update_geojson_kecamatan(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //SUCCESS
+        DB::transaction(function() use($req){
+            $geojson=FrontpageRepo::gets_geojson_curah_hujan_kecamatan([]);
+
+            $f_json=fopen(storage_path(env("UPLOAD_PATH"))."/fp_geojson_kecamatan.json", "w") or die("Unable to open file!");
+            $contents=json_encode($geojson);
+            fwrite($f_json, $contents);
+            fclose($f_json);
+
+            $gjk=FrontpageModel::where("type", "geojson_kecamatan")->lockForUpdate()->first();
+            $date=Carbon::parse(date("Y-m-d H:i:s"))->timezone(env("APP_TIMEZONE"));
+            if(!is_null($gjk)){
+                FrontpageModel::where("type", "geojson_kecamatan")
+                    ->update([
+                        'data'=>array_merge($gjk['data'], [
+                            'file_update'=>$date
+                        ]
+                    )
+                ]);
+            }
+            else{
+                FrontpageModel::create([
+                    'type'=>"geojson_kecamatan",
+                    'data'=>[
+                        'file_update'   =>$date,
+                        'db_update'     =>""
+                    ]
+                ]);
+            }
+        });
+
+        return response()->json([
+            'status'=>"ok"
         ]);
     }
 }

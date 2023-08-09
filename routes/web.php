@@ -98,6 +98,7 @@ $router->group(['prefix'=>"/frontpage_admin", 'middleware'=>'auth'], function()u
     $router->put("/post/{id}", ['uses'=>"FrontpageController@update_post"]);
     $router->delete("/post/{id}", ['uses'=>"FrontpageController@delete_post"]);
     $router->get("/post_kategori", ['uses'=>"FrontpageController@gets_post_kategori"]);
+    $router->put("/geojson_kecamatan", ['uses'=>"FrontpageController@update_geojson_kecamatan"]);
 });
 
 //frontpage
@@ -107,8 +108,10 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/summary/type/sifat_hujan_kecamatan", ['uses'=>"FrontpageController@get_summary_sifat_hujan_kecamatan"]);
     $router->get("/summary/type/jadwal_tanam_kecamatan", ['uses'=>"FrontpageController@get_jadwal_tanam_kecamatan"]);
     $router->get("/summary/type/curah_hujan_kecamatan", ['uses'=>"FrontpageController@gets_curah_hujan_kecamatan"]);
+    $router->get("/summary/type/geojson_curah_hujan_kecamatan", ['uses'=>"FrontpageController@gets_geojson_curah_hujan_kecamatan"]);
     $router->get("/region/type/provinsi", ['uses'=>"FrontpageController@gets_region_provinsi"]);
     $router->get("/region/type/kabupaten_kota", ['uses'=>"FrontpageController@gets_region_kabupaten_kota"]);
+    $router->get("/region/type/kecamatan", ['uses'=>"FrontpageController@gets_region_kecamatan"]);
     $router->get("/sebaran_opt", ['uses'=>"FrontpageController@gets_sebaran_opt"]);
     $router->get("/sebaran_opt/region", ['uses'=>"FrontpageController@gets_sebaran_opt_region"]);
     $router->get("/region/data/sebaran_opt", ['uses'=>"FrontpageController@gets_region_sebaran_opt"]);

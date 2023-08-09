@@ -97,6 +97,19 @@ function array_find($array=[], $key, $value){
     }
     return false;
 }
+function array_find_properties($array=[], $key, $value){
+    $i=0;
+    foreach($array as $element){
+        if($element['properties'][$key]==$value){
+            return [
+                'data'  =>$element,
+                'index' =>$i
+            ];
+        }
+        $i++;
+    }
+    return false;
+}
 function array_merge_without($array, $without=[], $merge=[])
 {
     $new_array=$array;
