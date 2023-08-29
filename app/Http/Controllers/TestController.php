@@ -186,7 +186,7 @@ class TestController extends Controller
     public function update_sebaran_opt(Request $request){
         $req=$request->all();
 
-        if(false){
+        if(true){
             return response()->json([
                 'status'=>"not allowed"
             ]);
@@ -263,5 +263,33 @@ class TestController extends Controller
         //     'not_found' =>$not_found,
         //     'count' =>$count_not_found
         // ]);
+    }
+
+    public function update_center_kecamatan(Request $request){
+        $req=$request->all();
+
+        if(true){
+            return response()->json([
+                'status'=>"not allowed"
+            ]);
+        }
+
+        //SUCCESS
+        $json=file_get_contents("http://localhost/data-csa/public/kecamatan_centers.json");
+        $json=json_decode($json, true);
+
+        foreach($json['data'] as $v){
+            $region=RegionModel::where("id_region", $v['id_region'])->lockForUpdate()->first();
+            
+            $region->update([
+                'geo_json'  =>array_merge($region['geo_json'], [
+                    'map_center'=>[
+                        'latitude'  =>$v['center']['latitude'],
+                        'longitude' =>$v['center']['longitude'],
+                        'zoom'      =>10
+                    ]
+                ])
+            ]);
+        }
     }
 }

@@ -49,6 +49,9 @@ class EwsController extends Controller
         //SUCCESS
         $ews=(object)[];
         DB::transaction(function() use($req, &$ews){
+            $q=EwsModel::lockForUpdate()
+                ->first();
+
             $update=EwsModel::updateOrCreate(
                 [
                     'id_region' =>$req['id_region'],

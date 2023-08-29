@@ -44,6 +44,9 @@ class CurahHujanController extends Controller
         //SUCCESS
         $curah_hujan=(object)[];
         DB::transaction(function() use($req, &$curah_hujan){
+            $q=CurahHujanModel::lockForUpdate()
+                ->first();
+
             $update=CurahHujanModel::updateOrCreate(
                 [
                     'id_region' =>$req['id_region'],
@@ -102,6 +105,9 @@ class CurahHujanController extends Controller
         //SUCCESS
         DB::transaction(function() use($req){
             foreach($req['data'] as $val){
+                $q=CurahHujanModel::lockForUpdate()
+                    ->first();
+                
                 CurahHujanModel::updateOrCreate(
                     [
                         'id_region' =>$val['id_region'],

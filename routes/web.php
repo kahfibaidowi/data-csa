@@ -123,6 +123,7 @@ $router->group(['prefix'=>"/test"], function()use($router){
     $router->get("/json/update", ['uses'=>"TestController@update"]);
     $router->get("/json/test_paginate", ['uses'=>"TestController@test_paginate"]);
     $router->get("/json/update_center", ['uses'=>"TestController@update_center"]);
+    $router->get("/json/update_center_kecamatan", ['uses'=>"TestController@update_center_kecamatan"]);
     $router->get("/json/get_center", ['uses'=>"TestController@get_center"]);
     $router->get("/json/import_sebaran_opt", ['uses'=>"TestController@import_sebaran_opt"]);
     $router->get("/json/update_sebaran_opt", ['uses'=>"TestController@update_sebaran_opt"]);

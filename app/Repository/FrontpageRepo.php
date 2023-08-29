@@ -437,21 +437,24 @@ class FrontpageRepo{
 
 
         //|kecamatan
-        $kecamatan=RegionModel::select("id_region", "region", "nested", "data", "geo_json", "type")
-            ->where("type", "kecamatan");
+        $kecamatan=DB::table("tbl_region as a")
+            ->select("a.id_region", "a.region", "a.nested", "a.data", "a.geo_json", "a.type", "b.id_region as id_region_kabupaten_kota", "c.id_region as id_region_provinsi", "b.region as kabupaten_kota", "c.region as provinsi")
+            ->join("tbl_region as b", "a.nested", "=", "b.id_region")
+            ->join("tbl_region as c", "b.nested", "=", "c.id_region")
+            ->where("a.type", "kecamatan");
         //--regency
         if($params['regency_id']!=""){
-            $kecamatan=$kecamatan->where("nested", $params['regency_id']);
+            $kecamatan=$kecamatan->where("a.nested", $params['regency_id']);
         }
         $kecamatan=$kecamatan
-            ->orderBy("region")
-            ->get()
-            ->toArray();
+            ->orderBy("a.region")
+            ->get();
+        $kecamatan=json_decode(json_encode($kecamatan), true);
 
         //|curah hujan
         $curah_hujan=DB::table("tbl_curah_hujan as a")
             ->join("tbl_region as b", "a.id_region", "=", "b.id_region")
-            ->select("a.id_region", "a.tahun", "a.bulan", "a.input_ke", "a.curah_hujan");
+            ->select("a.id_region", "a.tahun", "a.bulan", "a.input_ke", "a.curah_hujan", "a.curah_hujan_normal");
         //--regency
         if($params['regency_id']!=""){
             $curah_hujan=$curah_hujan->where("b.nested", $params['regency_id']);
@@ -465,11 +468,15 @@ class FrontpageRepo{
         //--kecamatan
         $features=[];
         foreach($kecamatan as $kec){
+            $kec['geo_json']=json_decode($kec['geo_json'], true);
+            
             $features[]=[
                 'type'      =>"Feature",
                 'properties'=>[
                     'id_region'     =>$kec['id_region'],
                     'region'        =>$kec['region'],
+                    'kabupaten_kota'=>$kec['kabupaten_kota'],
+                    'provinsi'      =>$kec['provinsi'],
                     'curah_hujan'   =>[],
                     'map_center'    =>$kec['geo_json']['map_center']
                 ],
@@ -484,7 +491,7 @@ class FrontpageRepo{
             'index'     =>-1
         ];
         foreach($curah_hujan as $ch){
-            $ch_generated=$ch['tahun']."|".$ch['bulan']."|".$ch['input_ke']."|".$ch['curah_hujan'];
+            $ch_generated=$ch['tahun']."|".$ch['bulan']."|".$ch['input_ke']."|".$ch['curah_hujan']."|".$ch['curah_hujan_normal'];
             if($ch['id_region']==$set_region['id_region']){
                 $features[$set_region['index']]['properties']['curah_hujan']=array_merge($features[$set_region['index']]['properties']['curah_hujan'], [$ch_generated]);
             }
