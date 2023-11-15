@@ -242,34 +242,34 @@ class FrontpageController extends Controller
         ]);
     }
 
-    public function gets_curah_hujan_kecamatan(Request $request)
-    {
-        $req=$request->all();
+    // public function gets_curah_hujan_kecamatan(Request $request)
+    // {
+    //     $req=$request->all();
 
-        //VALIDATION
-        $validation=Validator::make($req, [
-            'tahun'         =>"required|date_format:Y",
-            'regency_id'    =>[
-                "nullable",
-                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
-                    return $q->where("type", "kabupaten_kota");
-                })
-            ]
-        ]);
-        if($validation->fails()){
-            return response()->json([
-                'error' =>"VALIDATION_ERROR",
-                'data'  =>$validation->errors()->first()
-            ], 500);
-        }
+    //     //VALIDATION
+    //     $validation=Validator::make($req, [
+    //         'tahun'         =>"required|date_format:Y",
+    //         'regency_id'    =>[
+    //             "nullable",
+    //             Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+    //                 return $q->where("type", "kabupaten_kota");
+    //             })
+    //         ]
+    //     ]);
+    //     if($validation->fails()){
+    //         return response()->json([
+    //             'error' =>"VALIDATION_ERROR",
+    //             'data'  =>$validation->errors()->first()
+    //         ], 500);
+    //     }
 
-        //SUCCESS
-        $curah_hujan=FrontpageRepo::gets_curah_hujan_kecamatan($req);
+    //     //SUCCESS
+    //     $curah_hujan=FrontpageRepo::gets_curah_hujan_kecamatan($req);
 
-        return response()->json([
-            'data'  =>$curah_hujan
-        ]);
-    }
+    //     return response()->json([
+    //         'data'  =>$curah_hujan
+    //     ]);
+    // }
 
     public function gets_geojson_curah_hujan_kecamatan(Request $request)
     {

@@ -13,13 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tbl_curah_hujan', function (Blueprint $table) {
-            $table->id("id_curah_hujan");
+        Schema::create('tbl_curah_hujan_normal', function (Blueprint $table) {
+            $table->id("id_curah_hujan_normal");
             $table->unsignedBigInteger("id_region")->comment("region provinsi/kabupaten kota/kecamatan");
-            $table->integer("tahun");
             $table->integer("bulan");
             $table->integer("input_ke");
-            $table->double("curah_hujan");
+            $table->double("curah_hujan_normal");
             $table->timestamps();
 
             //fk/index
@@ -35,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tbl_curah_hujan');
+        Schema::dropIfExists('tbl_curah_hujan_normal');
     }
 };

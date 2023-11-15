@@ -67,6 +67,28 @@ $router->group(['prefix'=>'/opt', 'middleware'=>'auth'], function()use($router){
     $router->put("/{id}", ['uses'=>"OptController@update"]);
 });
 
+//SEBARAN OPT
+$router->group(['prefix'=>'/sebaran_opt', 'middleware'=>'auth'], function()use($router){
+    $router->get("/", ['uses'=>"SebaranOptController@gets"]);
+    $router->get("/type/region_kabupaten_kota", ['uses'=>"SebaranOptController@gets_region_kabupaten_kota"]);
+    // $router->get("/{id}", ['uses'=>"OptController@get"]);
+    $router->post("/type/multiple", ['uses'=>"SebaranOptController@add_multiple"]);
+    // $router->delete("/{id}", ['uses'=>"OptController@delete"]);
+    // $router->put("/{id}", ['uses'=>"OptController@update"]);
+});
+
+//CURAH HUJAN NORMAL
+$router->group(['prefix'=>'/curah_hujan_normal', 'middleware'=>'auth'], function()use($router){
+    $router->post("/action/copy_from_curah_hujan", ['uses'=>"CurahHujanNormalController@copy_from_curah_hujan"]);
+    $router->post("/", ['uses'=>"CurahHujanNormalController@upsert"]);
+    $router->post("/type/multiple", ['uses'=>"CurahHujanNormalController@upsert_multiple"]);
+    // $router->delete("/{id}", ['uses'=>"CurahHujanController@delete"]);
+    // $router->get("/type/kabupaten_kota", ['uses'=>"CurahHujanController@gets_kabupaten_kota"]);
+    // $router->get("/type/kecamatan", ['uses'=>"CurahHujanController@gets_kecamatan"]);
+    // $router->get("/type/provinsi", ['uses'=>"CurahHujanController@gets_provinsi"]);
+    $router->get("/type/treeview", ['uses'=>"CurahHujanNormalController@gets_treeview"]);
+});
+
 //CURAH HUJAN
 $router->group(['prefix'=>'/curah_hujan', 'middleware'=>'auth'], function()use($router){
     $router->post("/", ['uses'=>"CurahHujanController@upsert"]);
@@ -127,4 +149,5 @@ $router->group(['prefix'=>"/test"], function()use($router){
     $router->get("/json/get_center", ['uses'=>"TestController@get_center"]);
     $router->get("/json/import_sebaran_opt", ['uses'=>"TestController@import_sebaran_opt"]);
     $router->get("/json/update_sebaran_opt", ['uses'=>"TestController@update_sebaran_opt"]);
+    $router->get("/validation", ['uses'=>"TestController@validation"]);
 });

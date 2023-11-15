@@ -277,10 +277,15 @@ class EwsRepo{
             ->get()
             ->toArray();
 
-        $curah_hujan=DB::table("tbl_curah_hujan")
-            ->select("id_curah_hujan", "id_region", "tahun", "bulan", "input_ke", "curah_hujan", "curah_hujan_normal")
-            ->where("tahun", $params['tahun'])
-            ->orderBy("id_region")
+        $curah_hujan=DB::table("tbl_curah_hujan_normal as a")
+            ->leftJoin("tbl_curah_hujan as b", function($join)use($params){
+                $join->on("a.id_region", "=", "b.id_region");
+                $join->on("a.bulan", "=", "b.bulan");
+                $join->on("a.input_ke", "=", "b.input_ke");
+                $join->on("b.tahun", DB::raw($params['tahun']));
+            })
+            ->select("b.id_curah_hujan", "a.id_region", DB::raw($params['tahun']." as tahun"), "a.bulan", "a.input_ke", DB::raw("coalesce(b.curah_hujan, '') as curah_hujan"), "a.curah_hujan_normal")
+            ->orderBy("a.id_region")
             ->get();
         $curah_hujan=json_decode(json_encode($curah_hujan), true);
         $ews=DB::table("tbl_ews")

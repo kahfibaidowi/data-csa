@@ -9,197 +9,197 @@ use App\Models\RegionModel;
 
 class CurahHujanRepo{
 
-    public static function gets_curah_hujan_kecamatan($params)
-    {
-        //params
-        $params['per_page']=trim($params['per_page']);
-        $params['province_id']=trim($params['province_id']);
-        $params['regency_id']=trim($params['regency_id']);
-        $params['pulau']=trim($params['pulau']);
+    // public static function gets_curah_hujan_kecamatan($params)
+    // {
+    //     //params
+    //     $params['per_page']=trim($params['per_page']);
+    //     $params['province_id']=trim($params['province_id']);
+    //     $params['regency_id']=trim($params['regency_id']);
+    //     $params['pulau']=trim($params['pulau']);
 
-        //query
-        $query=RegionModel::where("type", "kecamatan");
-        $query=$query->with([
-            "curah_hujan"   =>function($q)use($params){
-                return $q->where("tahun", $params['tahun']);
-            },
-            "parent",
-            "parent.parent"
-        ]);
-        $query=$query->where("region", "like", "%".$params['q']."%");
-        //parent regency
-        $query=$query->whereHas("parent", function($q)use($params){
-            //--regency id
-            if($params['regency_id']!=""){
-                $q=$q->where("id_region", $params['regency_id']);
-            }
-        });
-        //parent province
-        $query=$query->whereHas("parent.parent", function($q)use($params){
-            //--province id
-            if($params['province_id']!=""){
-                $q=$q->where("id_region", $params['province_id']);
-            }
-            if($params['pulau']!=""){
-                $q=$q->where("data->pulau", $params['pulau']);
-            }
-        });
-        //--order
-        $query=$query->orderBy("region");
+    //     //query
+    //     $query=RegionModel::where("type", "kecamatan");
+    //     $query=$query->with([
+    //         "curah_hujan"   =>function($q)use($params){
+    //             return $q->where("tahun", $params['tahun']);
+    //         },
+    //         "parent",
+    //         "parent.parent"
+    //     ]);
+    //     $query=$query->where("region", "like", "%".$params['q']."%");
+    //     //parent regency
+    //     $query=$query->whereHas("parent", function($q)use($params){
+    //         //--regency id
+    //         if($params['regency_id']!=""){
+    //             $q=$q->where("id_region", $params['regency_id']);
+    //         }
+    //     });
+    //     //parent province
+    //     $query=$query->whereHas("parent.parent", function($q)use($params){
+    //         //--province id
+    //         if($params['province_id']!=""){
+    //             $q=$q->where("id_region", $params['province_id']);
+    //         }
+    //         if($params['pulau']!=""){
+    //             $q=$q->where("data->pulau", $params['pulau']);
+    //         }
+    //     });
+    //     //--order
+    //     $query=$query->orderBy("region");
 
-        //return
-        $data=$query->paginate($params['per_page'])->toArray();
-        return $data;
+    //     //return
+    //     $data=$query->paginate($params['per_page'])->toArray();
+    //     return $data;
         
-        $new_data=[];
-        foreach($data['data'] as $val){
-            $new_data[]=array_merge_without($val, ['geo_json', 'parent'], [
-                'provinsi'      =>array_merge_without($val['parent']['parent'], ['geo_json']),
-                'kabupaten_kota'=>array_merge_without($val['parent'], ['geo_json', 'parent'])
-            ]);
-        }
+    //     $new_data=[];
+    //     foreach($data['data'] as $val){
+    //         $new_data[]=array_merge_without($val, ['geo_json', 'parent'], [
+    //             'provinsi'      =>array_merge_without($val['parent']['parent'], ['geo_json']),
+    //             'kabupaten_kota'=>array_merge_without($val['parent'], ['geo_json', 'parent'])
+    //         ]);
+    //     }
 
-        return array_merge($data, [
-            'data'  =>$new_data
-        ]);
-    }
+    //     return array_merge($data, [
+    //         'data'  =>$new_data
+    //     ]);
+    // }
 
-    public static function gets_curah_hujan_kabupaten_kota($params)
-    {
-        //params
-        $params['per_page']=trim($params['per_page']);
-        $params['province_id']=trim($params['province_id']);
-        $params['pulau']=trim($params['pulau']);
+    // public static function gets_curah_hujan_kabupaten_kota($params)
+    // {
+    //     //params
+    //     $params['per_page']=trim($params['per_page']);
+    //     $params['province_id']=trim($params['province_id']);
+    //     $params['pulau']=trim($params['pulau']);
 
-        //query
-        $query=RegionModel::where("type", "kabupaten_kota");
-        $query=$query->with([
-            "curah_hujan_kabupaten_kota"=>function($q)use($params){
-                return $q->where("tahun", $params['tahun']);
-            },
-            "parent"
-        ]);
-        $query=$query->where("region", "like", "%".$params['q']."%");
-        //parent
-        $query=$query->whereHas("parent", function($q)use($params){
-            //--province id
-            if($params['province_id']!=""){
-                $q=$q->where("id_region", $params['province_id']);
-            }
-            if($params['pulau']!=""){
-                $q=$q->where("data->pulau", $params['pulau']);
-            }
-        });
-        //--order
-        $query=$query->orderBy("region");
+    //     //query
+    //     $query=RegionModel::where("type", "kabupaten_kota");
+    //     $query=$query->with([
+    //         "curah_hujan_kabupaten_kota"=>function($q)use($params){
+    //             return $q->where("tahun", $params['tahun']);
+    //         },
+    //         "parent"
+    //     ]);
+    //     $query=$query->where("region", "like", "%".$params['q']."%");
+    //     //parent
+    //     $query=$query->whereHas("parent", function($q)use($params){
+    //         //--province id
+    //         if($params['province_id']!=""){
+    //             $q=$q->where("id_region", $params['province_id']);
+    //         }
+    //         if($params['pulau']!=""){
+    //             $q=$q->where("data->pulau", $params['pulau']);
+    //         }
+    //     });
+    //     //--order
+    //     $query=$query->orderBy("region");
 
-        //return
-        $data=$query->paginate($params['per_page'])->toArray();
+    //     //return
+    //     $data=$query->paginate($params['per_page'])->toArray();
 
-        $new_data=[];
-        foreach($data['data'] as $val){
-            $curah_hujan=[];
-            for($i=1; $i<=12; $i++){
-                for($j=1; $j<=3; $j++){
-                    //curah hujan
-                    $filter_ch=array_filter($val['curah_hujan_kabupaten_kota'], function($obj)use($i, $j){
-                        return (strval($obj['bulan'])==strval($i) && strval($obj['input_ke'])==strval($j));
-                    });
+    //     $new_data=[];
+    //     foreach($data['data'] as $val){
+    //         $curah_hujan=[];
+    //         for($i=1; $i<=12; $i++){
+    //             for($j=1; $j<=3; $j++){
+    //                 //curah hujan
+    //                 $filter_ch=array_filter($val['curah_hujan_kabupaten_kota'], function($obj)use($i, $j){
+    //                     return (strval($obj['bulan'])==strval($i) && strval($obj['input_ke'])==strval($j));
+    //                 });
 
-                    if(count($filter_ch)>0){
-                        $sum_curah_hujan=array_reduce($filter_ch, function($carry, $item){
-                            return $carry+=doubleval($item['curah_hujan']);
-                        }, 0);
-                        $sum_curah_hujan_normal=array_reduce($filter_ch, function($carry, $item){
-                            return $carry+=doubleval($item['curah_hujan_normal']);
-                        }, 0);
+    //                 if(count($filter_ch)>0){
+    //                     $sum_curah_hujan=array_reduce($filter_ch, function($carry, $item){
+    //                         return $carry+=doubleval($item['curah_hujan']);
+    //                     }, 0);
+    //                     $sum_curah_hujan_normal=array_reduce($filter_ch, function($carry, $item){
+    //                         return $carry+=doubleval($item['curah_hujan_normal']);
+    //                     }, 0);
 
-                        $ch=[
-                            'tahun'     =>$params['tahun'],
-                            'bulan'     =>$i,
-                            'input_ke'  =>$j,
-                            'curah_hujan'       =>$sum_curah_hujan/count($filter_ch),
-                            'curah_hujan_normal'=>$sum_curah_hujan_normal/count($filter_ch)
-                        ];
-                        $curah_hujan[]=$ch;
-                    }
-                }
-            }
+    //                     $ch=[
+    //                         'tahun'     =>$params['tahun'],
+    //                         'bulan'     =>$i,
+    //                         'input_ke'  =>$j,
+    //                         'curah_hujan'       =>$sum_curah_hujan/count($filter_ch),
+    //                         'curah_hujan_normal'=>$sum_curah_hujan_normal/count($filter_ch)
+    //                     ];
+    //                     $curah_hujan[]=$ch;
+    //                 }
+    //             }
+    //         }
 
-            $new_data[]=array_merge_without($val, ['geo_json', 'parent', 'curah_hujan_kabupaten_kota'], [
-                'curah_hujan'   =>$curah_hujan,
-                'provinsi'      =>array_merge_without($val['parent'], ['geo_json'])
-            ]);
-        }
+    //         $new_data[]=array_merge_without($val, ['geo_json', 'parent', 'curah_hujan_kabupaten_kota'], [
+    //             'curah_hujan'   =>$curah_hujan,
+    //             'provinsi'      =>array_merge_without($val['parent'], ['geo_json'])
+    //         ]);
+    //     }
 
-        return array_merge($data, [
-            'data'  =>$new_data
-        ]);
-    }
+    //     return array_merge($data, [
+    //         'data'  =>$new_data
+    //     ]);
+    // }
 
-    public static function gets_curah_hujan_provinsi($params)
-    {
-        //params
-        $params['per_page']=trim($params['per_page']);
-        $params['pulau']=trim($params['pulau']);
+    // public static function gets_curah_hujan_provinsi($params)
+    // {
+    //     //params
+    //     $params['per_page']=trim($params['per_page']);
+    //     $params['pulau']=trim($params['pulau']);
 
-        //query
-        $query=RegionModel::where("type", "provinsi");
-        $query=$query->with([
-            "curah_hujan_provinsi"  =>function($q)use($params){
-                return $q->where("tahun", $params['tahun']);
-            }
-        ]);
-        $query=$query->where("region", "like", "%".$params['q']."%");
-        //--pulau
-        if($params['pulau']!=""){
-            $query=$query->where("data->pulau", $params['pulau']);
-        }
-        //--order
-        $query=$query->orderBy("region");
+    //     //query
+    //     $query=RegionModel::where("type", "provinsi");
+    //     $query=$query->with([
+    //         "curah_hujan_provinsi"  =>function($q)use($params){
+    //             return $q->where("tahun", $params['tahun']);
+    //         }
+    //     ]);
+    //     $query=$query->where("region", "like", "%".$params['q']."%");
+    //     //--pulau
+    //     if($params['pulau']!=""){
+    //         $query=$query->where("data->pulau", $params['pulau']);
+    //     }
+    //     //--order
+    //     $query=$query->orderBy("region");
 
-        //return
-        $data=$query->paginate($params['per_page'])->toArray();
+    //     //return
+    //     $data=$query->paginate($params['per_page'])->toArray();
 
-        $new_data=[];
-        foreach($data['data'] as $val){
-            $curah_hujan=[];
-            for($i=1; $i<=12; $i++){
-                for($j=1; $j<=3; $j++){
-                    //curah hujan
-                    $filter_ch=array_filter($val['curah_hujan_provinsi'], function($obj)use($i, $j){
-                        return (strval($obj['bulan'])==strval($i) && strval($obj['input_ke'])==strval($j));
-                    });
+    //     $new_data=[];
+    //     foreach($data['data'] as $val){
+    //         $curah_hujan=[];
+    //         for($i=1; $i<=12; $i++){
+    //             for($j=1; $j<=3; $j++){
+    //                 //curah hujan
+    //                 $filter_ch=array_filter($val['curah_hujan_provinsi'], function($obj)use($i, $j){
+    //                     return (strval($obj['bulan'])==strval($i) && strval($obj['input_ke'])==strval($j));
+    //                 });
 
-                    if(count($filter_ch)>0){
-                        $sum_curah_hujan=array_reduce($filter_ch, function($carry, $item){
-                            return $carry+=doubleval($item['curah_hujan']);
-                        }, 0);
-                        $sum_curah_hujan_normal=array_reduce($filter_ch, function($carry, $item){
-                            return $carry+=doubleval($item['curah_hujan_normal']);
-                        }, 0);
+    //                 if(count($filter_ch)>0){
+    //                     $sum_curah_hujan=array_reduce($filter_ch, function($carry, $item){
+    //                         return $carry+=doubleval($item['curah_hujan']);
+    //                     }, 0);
+    //                     $sum_curah_hujan_normal=array_reduce($filter_ch, function($carry, $item){
+    //                         return $carry+=doubleval($item['curah_hujan_normal']);
+    //                     }, 0);
 
-                        $ch=[
-                            'tahun'     =>$params['tahun'],
-                            'bulan'     =>$i,
-                            'input_ke'  =>$j,
-                            'curah_hujan'       =>$sum_curah_hujan/count($filter_ch),
-                            'curah_hujan_normal'=>$sum_curah_hujan_normal/count($filter_ch)
-                        ];
-                        $curah_hujan[]=$ch;
-                    }
-                }
-            }
+    //                     $ch=[
+    //                         'tahun'     =>$params['tahun'],
+    //                         'bulan'     =>$i,
+    //                         'input_ke'  =>$j,
+    //                         'curah_hujan'       =>$sum_curah_hujan/count($filter_ch),
+    //                         'curah_hujan_normal'=>$sum_curah_hujan_normal/count($filter_ch)
+    //                     ];
+    //                     $curah_hujan[]=$ch;
+    //                 }
+    //             }
+    //         }
 
-            $new_data[]=array_merge_without($val, ['geo_json', 'curah_hujan_provinsi'], [
-                'curah_hujan'   =>$curah_hujan
-            ]);
-        }
+    //         $new_data[]=array_merge_without($val, ['geo_json', 'curah_hujan_provinsi'], [
+    //             'curah_hujan'   =>$curah_hujan
+    //         ]);
+    //     }
 
-        return array_merge($data, [
-            'data'  =>$new_data
-        ]);
-    }
+    //     return array_merge($data, [
+    //         'data'  =>$new_data
+    //     ]);
+    // }
 
     public static function gets_curah_hujan_treeview($params)
     {
@@ -220,12 +220,30 @@ class CurahHujanRepo{
             ->get()
             ->toArray();
 
-        $curah_hujan=DB::table("tbl_curah_hujan")
-            ->select("id_curah_hujan", "id_region", "tahun", "bulan", "input_ke", "curah_hujan", "curah_hujan_normal")
-            ->where("tahun", $params['tahun'])
-            ->orderBy("id_region")
+        // $curah_hujan=DB::table("tbl_curah_hujan as a")
+        //     ->rightJoin("tbl_curah_hujan_normal as b", function($join){
+        //         $join->on("a.id_region", "=", "b.id_region");
+        //         $join->on("a.bulan", "=", "b.bulan");
+        //         $join->on("a.input_ke", "=", "b.input_ke");
+        //     })
+        //     ->select("a.id_curah_hujan", "a.id_region", "a.tahun", "a.bulan", "a.input_ke", "a.curah_hujan", DB::raw("coalesce(b.curah_hujan_normal, '') as curah_hujan_normal"))
+        //     ->where("a.tahun", $params['tahun'])
+        //     ->orderBy("a.id_region")
+        //     ->get();
+        // $curah_hujan=json_decode(json_encode($curah_hujan), true);
+        $curah_hujan=DB::table("tbl_curah_hujan_normal as a")
+            ->leftJoin("tbl_curah_hujan as b", function($join)use($params){
+                $join->on("a.id_region", "=", "b.id_region");
+                $join->on("a.bulan", "=", "b.bulan");
+                $join->on("a.input_ke", "=", "b.input_ke");
+                $join->on("b.tahun", DB::raw($params['tahun']));
+            })
+            ->select("b.id_curah_hujan", "a.id_region", DB::raw($params['tahun']." as tahun"), "a.bulan", "a.input_ke", DB::raw("coalesce(b.curah_hujan, '') as curah_hujan"), "a.curah_hujan_normal")
+            ->orderBy("a.id_region")
             ->get();
         $curah_hujan=json_decode(json_encode($curah_hujan), true);
+
+        // return response()->json(['curah_hujan'=>$curah_hujan]);
 
         //process
         //--curah hujan
@@ -283,6 +301,11 @@ class CurahHujanRepo{
             'index'     =>-1
         ];
         foreach($kab_kota as $key=>$regency){
+            if(!isset($regency['kecamatan'])){
+                $kab_kota[$key]['kecamatan']=[];
+                $regency['kecamatan']=[];
+            }
+            
             if($regency['nested']==$set_region['id_region']){
                 $provinsi[$set_region['index']]['kabupaten_kota']=array_merge($provinsi[$set_region['index']]['kabupaten_kota'], [$regency]);
             }

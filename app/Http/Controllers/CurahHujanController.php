@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Repository\CurahHujanRepo;
 use App\Models\CurahHujanModel;
+use App\Models\CurahHujanNormalModel;
 
 class CurahHujanController extends Controller
 {
@@ -31,7 +32,29 @@ class CurahHujanController extends Controller
             'tahun'     =>"required|date_format:Y",
             'bulan'     =>"required|integer|min:1|max:12",
             'input_ke'  =>"required|integer|min:1|max:3",
-            'curah_hujan'   =>"required|numeric",
+            'curah_hujan'   =>[
+                "required",
+                "numeric",
+                function($attr, $value, $fail)use($req){
+                    $id_region=isset($req['id_region'])?$req['id_region']:-1;
+                    $bulan=isset($req['bulan'])?$req['bulan']:-1;
+                    $input_ke=isset($req['input_ke'])?$req['input_ke']:-1;
+
+                    if($id_region==-1 || $bulan==-1 || $input_ke==-1){
+                        return $fail("region/bulan invalid!");
+                    }
+
+                    $q=CurahHujanNormalModel::
+                        where("id_region", $id_region)
+                        ->where("bulan", $bulan)
+                        ->where("input_ke", $input_ke)
+                        ->first();
+
+                    if(!isset($q)){
+                        return $fail("curah hujan normal on region/bulan not found!");
+                    }
+                }
+            ],
             'curah_hujan_normal'=>"required|numeric"
         ]);
         if($validation->fails()){
@@ -55,12 +78,12 @@ class CurahHujanController extends Controller
                     'input_ke'  =>$req['input_ke']
                 ],
                 [
-                    'curah_hujan'       =>$req['curah_hujan'],
-                    'curah_hujan_normal'=>$req['curah_hujan_normal'],
+                    'curah_hujan'       =>$req['curah_hujan']
                 ]
             );
-
-            $curah_hujan=$update;
+            $curah_hujan=array_merge($update->toArray(), [
+                'curah_hujan_normal'=>$req['curah_hujan_normal']
+            ]);
         });
 
         return response()->json([
@@ -92,7 +115,31 @@ class CurahHujanController extends Controller
             'data.*.id_region'  =>"required|exists:App\Models\RegionModel,id_region",
             'data.*.bulan'      =>"required|integer|min:1|max:12",
             'data.*.input_ke'   =>"required|integer|min:1|max:3",
-            'data.*.curah_hujan'=>"required|numeric",
+            'data.*.curah_hujan'=>[
+                "required",
+                "numeric",
+                function($attr, $value, $fail)use($req){
+                    $index=explode(".", $attr)[1];
+
+                    $id_region=isset($req['data'][$index]['id_region'])?$req['data'][$index]['id_region']:-1;
+                    $bulan=isset($req['data'][$index]['bulan'])?$req['data'][$index]['bulan']:-1;
+                    $input_ke=isset($req['data'][$index]['input_ke'])?$req['data'][$index]['input_ke']:-1;
+
+                    if($id_region==-1 || $bulan==-1 || $input_ke==-1){
+                        return $fail("row ".($index+1)." region/bulan invalid!");
+                    }
+
+                    $q=CurahHujanNormalModel::
+                        where("id_region", $id_region)
+                        ->where("bulan", $bulan)
+                        ->where("input_ke", $input_ke)
+                        ->first();
+
+                    if(!isset($q)){
+                        return $fail("curah hujan normal on region/bulan not found!");
+                    }
+                }
+            ],
             'data.*.curah_hujan_normal' =>"required|numeric"
         ]);
         if($validation->fails()){
@@ -104,10 +151,10 @@ class CurahHujanController extends Controller
 
         //SUCCESS
         DB::transaction(function() use($req){
-            foreach($req['data'] as $val){
-                $q=CurahHujanModel::lockForUpdate()
-                    ->first();
+            $q=CurahHujanModel::lockForUpdate()
+                ->first();
                 
+            foreach($req['data'] as $val){
                 CurahHujanModel::updateOrCreate(
                     [
                         'id_region' =>$val['id_region'],
@@ -116,8 +163,7 @@ class CurahHujanController extends Controller
                         'input_ke'  =>$val['input_ke']
                     ],
                     [
-                        'curah_hujan'       =>$val['curah_hujan'],
-                        'curah_hujan_normal'=>$val['curah_hujan_normal'],
+                        'curah_hujan'       =>$val['curah_hujan']
                     ]
                 );
             }
