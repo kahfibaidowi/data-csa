@@ -98,6 +98,8 @@ $router->group(['prefix'=>'/curah_hujan', 'middleware'=>'auth'], function()use($
     $router->get("/type/kecamatan", ['uses'=>"CurahHujanController@gets_kecamatan"]);
     $router->get("/type/provinsi", ['uses'=>"CurahHujanController@gets_provinsi"]);
     $router->get("/type/treeview", ['uses'=>"CurahHujanController@gets_treeview"]);
+    $router->get("/type/kecamatan/activity", ['uses'=>"CurahHujanController@gets_activity"]);
+    $router->post("/type/multiple/chunk", ['uses'=>"CurahHujanController@insert_chunk_multiple"]);
 });
 
 //EWS
@@ -110,7 +112,7 @@ $router->group(['prefix'=>'/ews', 'middleware'=>'auth'], function()use($router){
     $router->get("/type/treeview", ['uses'=>"EwsController@gets_treeview"]);
 });
 
-//frontpage
+//frontpage admin
 $router->group(['prefix'=>"/frontpage_admin", 'middleware'=>'auth'], function()use($router){
     $router->post("/widget", ['uses'=>"FrontpageController@upsert_widget"]);
     $router->get("/widget", ['uses'=>"FrontpageController@get_widget"]);

@@ -150,8 +150,10 @@ class FrontpageRepo{
             ->paginate($params['per_page'])
             ->toArray();
         $kecamatan=json_decode(json_encode($kecamatan), true);
+        $kecamatan_in=[-1];
         foreach($kecamatan['data'] as &$val){
             $val['data']=json_decode($val['data'], true);
+            $kecamatan_in[]=$val['id_region'];
         }
 
         //--curah hujan
@@ -164,7 +166,10 @@ class FrontpageRepo{
             })
             ->select("ch.id_curah_hujan", "ch.id_region", "ch.tahun", "ch.bulan", "ch.input_ke", "ch.curah_hujan", "chn.curah_hujan_normal")
             ->where("ch.tahun", $params['tahun'])
-            ->where("a.region", "like", "%".$params['q']."%");
+            // METHOD 1
+            // ->where("a.region", "like", "%".$params['q']."%");
+            // METHOD 2
+            ->whereIn("a.id_region", $kecamatan_in);
         $curah_hujan=$q_curah_hujan
             ->orderBy("ch.id_region")
             ->get();

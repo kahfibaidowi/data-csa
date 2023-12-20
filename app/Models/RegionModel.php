@@ -106,4 +106,9 @@ class RegionModel extends Model{
     public function sebaran_opt(){
         return $this->hasMany(SebaranOptModel::class, "id_region", "id_region");
     }
+
+    //--ch activity
+    public function curah_hujan_activity(){
+        return $this->hasMany(CurahHujanActivityModel::class, "id_region", "id_region")->orderByDesc("id_curah_hujan_activity");
+    }
 }

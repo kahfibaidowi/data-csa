@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\CurahHujanModel;
+use App\Models\CurahHujanActivityModel;
 use App\Models\RegionModel;
 
 
@@ -339,5 +340,120 @@ class CurahHujanRepo{
         
         //return
         return $provinsi;
+    }
+
+    // public static function gets_activity($params)
+    // {
+    //     //PARAMS
+    //     $params['per_page']=isset($params['per_page'])?trim($params['per_page']):"";
+    //     $params['q']=isset($params['q'])?trim($params['q']):"";
+    //     $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
+    //     $params['province_id']=isset($params['province_id'])?trim($params['province_id']):"";
+    //     $params['regency_id']=isset($params['regency_id'])?trim($params['regency_id']):"";
+
+    //     //REGION
+    //     $q_region=RegionModel::with("parent:id_region,region,nested", "parent.parent:id_region,region,nested");
+    //     $q_region=$q_region->where("type", "kecamatan")
+    //         ->where("region", "like", "%".$params['q']."%");
+    //     //--province id
+    //     if($params['province_id']!=""){
+    //         $q_region=$q_region->whereHas("parent", function($q)use($params){
+    //             $q->where("nested", $params['province_id']);
+    //         });
+    //     }
+    //     //--regency id
+    //     if($params['regency_id']!=""){
+    //         $q_region=$q_region->where("nested", $params['regency_id']);
+    //     }
+    //     //--order
+    //     $q_region=$q_region->orderBy("region");
+    //     $region=$q_region->paginate($params['per_page'])->toArray();
+
+    //     //ACTIVITY
+    //     $q_activity=CurahHujanActivityModel::with("user:id_user,nama_lengkap");
+    //     $q_activity=$q_activity->where("tahun", $params['tahun']);
+    //     //--province id
+    //     if($params['province_id']!=""){
+    //         $q_activity=$q_activity->whereHas("region.parent", function($q)use($params){
+    //             $q->where("nested", $params['province_id']);
+    //         });
+    //     }
+    //     //--regency id
+    //     if($params['regency_id']!=""){
+    //         $q_activity=$q_activity->whereHas("region", function($q)use($params){
+    //             $q->where("nested", $params['regency_id']);
+    //         });
+    //     }
+    //     $q_activity=$q_activity->orderBy("id_region");
+    //     $q_activity=$q_activity->orderBy("id_curah_hujan_activity");
+    //     $activity=$q_activity->get()->toArray();
+
+    //     //PROCESS
+    //     $new_region=[];
+    //     foreach($region['data'] as $val){
+    //         $new_region[]=array_merge($val, [
+    //             'activity'  =>[]
+    //         ]);
+    //     }
+
+    //     $set_region=[
+    //         'id_region' =>"-1",
+    //         'index'     =>-1
+    //     ];
+    //     foreach($activity as $val){
+    //         if($val['id_region']==$set_region['id_region']){
+    //             $new_region[$set_region['index']]['activity']=array_merge($new_region[$set_region['index']]['activity'], [$val]);
+    //         }
+    //         else{
+    //             $find_region=array_find($new_region, "id_region", $val['id_region']);
+    //             if($find_region!==false){
+    //                 $new_region[$find_region['index']]['activity']=[$val];
+    //                 $set_region=[
+    //                     'id_region' =>$val['id_region'],
+    //                     'index'     =>$find_region['index']
+    //                 ];
+    //             }
+    //         }
+    //     }
+        
+    //     //RETURN
+    //     return array_merge($region, [
+    //         'data'  =>$new_region
+    //     ]);
+    // }
+
+    public static function gets_activity($params)
+    {
+        //PARAMS
+        $params['per_page']=isset($params['per_page'])?trim($params['per_page']):"";
+        $params['q']=isset($params['q'])?trim($params['q']):"";
+        $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
+        $params['province_id']=isset($params['province_id'])?trim($params['province_id']):"";
+        $params['regency_id']=isset($params['regency_id'])?trim($params['regency_id']):"";
+
+        //REGION
+        $q_region=RegionModel::select("id_region", "nested", "type", "region", "data", "created_at", "updated_at");
+        $q_region=$q_region->with("parent:id_region,region,nested", "parent.parent:id_region,region,nested");
+        $q_region=$q_region->with("curah_hujan_activity.user:id_user,nama_lengkap");
+        $q_region=$q_region->with("curah_hujan_activity", function($q)use($params){
+            return $q->where("tahun", $params['tahun']);
+        });
+        $q_region=$q_region->where("type", "kecamatan")
+            ->where("region", "like", "%".$params['q']."%");
+        //--province id
+        if($params['province_id']!=""){
+            $q_region=$q_region->whereHas("parent", function($q)use($params){
+                $q->where("nested", $params['province_id']);
+            });
+        }
+        //--regency id
+        if($params['regency_id']!=""){
+            $q_region=$q_region->where("nested", $params['regency_id']);
+        }
+        //--order
+        $q_region=$q_region->orderBy("region");
+
+        //RETURN
+        return $q_region->paginate($params['per_page'])->toArray();
     }
 }

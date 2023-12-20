@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use App\Repository\CurahHujanRepo;
 use App\Models\CurahHujanModel;
 use App\Models\CurahHujanNormalModel;
+use App\Models\CurahHujanActivityModel;
 
 class CurahHujanController extends Controller
 {
@@ -66,10 +67,11 @@ class CurahHujanController extends Controller
 
         //SUCCESS
         $curah_hujan=(object)[];
-        DB::transaction(function() use($req, &$curah_hujan){
+        DB::transaction(function() use($req, $login_data, &$curah_hujan){
             $q=CurahHujanModel::lockForUpdate()
                 ->first();
 
+            $updated_at=date("Y-m-d H:i:s");
             $update=CurahHujanModel::updateOrCreate(
                 [
                     'id_region' =>$req['id_region'],
@@ -78,9 +80,21 @@ class CurahHujanController extends Controller
                     'input_ke'  =>$req['input_ke']
                 ],
                 [
-                    'curah_hujan'       =>$req['curah_hujan']
+                    'curah_hujan'   =>$req['curah_hujan'],
+                    'updated_at'    =>$updated_at  
                 ]
             );
+            CurahHujanActivityModel::create([
+                'id_region' =>$req['id_region'],
+                'tahun'     =>$req['tahun'],
+                'bulan'     =>$req['bulan'],
+                'input_ke'  =>$req['input_ke'],
+                'curah_hujan'   =>$req['curah_hujan'],
+                'id_user'       =>$login_data['id_user'],
+                'info_device'   =>$_SERVER['HTTP_USER_AGENT'],
+                'updated_at'    =>$updated_at
+            ]);
+
             $curah_hujan=array_merge($update->toArray(), [
                 'curah_hujan_normal'=>$req['curah_hujan_normal']
             ]);
@@ -150,10 +164,11 @@ class CurahHujanController extends Controller
         }
 
         //SUCCESS
-        DB::transaction(function() use($req){
+        DB::transaction(function() use($req, $login_data){
             $q=CurahHujanModel::lockForUpdate()
                 ->first();
-                
+            
+            $updated_at=date("Y-m-d H:i:s");
             foreach($req['data'] as $val){
                 CurahHujanModel::updateOrCreate(
                     [
@@ -163,9 +178,20 @@ class CurahHujanController extends Controller
                         'input_ke'  =>$val['input_ke']
                     ],
                     [
-                        'curah_hujan'       =>$val['curah_hujan']
+                        'curah_hujan'   =>$val['curah_hujan'],
+                        'updated_at'    =>$updated_at  
                     ]
                 );
+                CurahHujanActivityModel::create([
+                    'id_region' =>$val['id_region'],
+                    'tahun'     =>$req['tahun'],
+                    'bulan'     =>$val['bulan'],
+                    'input_ke'  =>$val['input_ke'],
+                    'curah_hujan'   =>$val['curah_hujan'],
+                    'id_user'       =>$login_data['id_user'],
+                    'info_device'   =>$_SERVER['HTTP_USER_AGENT'],
+                    'updated_at'    =>$updated_at
+                ]);
             }
         });
 
@@ -392,6 +418,128 @@ class CurahHujanController extends Controller
             'current_page'  =>1,
             'last_page'     =>1,
             'data'          =>$curah_hujan
+        ]);
+    }
+
+    public function gets_activity(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+        
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'  =>"nullable|integer|min:1",
+            'tahun'     =>"required|date_format:Y",
+            'province_id'=>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "provinsi");
+                })
+            ],
+            'regency_id'=>[
+                "nullable",
+                Rule::exists("App\Models\RegionModel", "id_region")->where(function($q){
+                    return $q->where("type", "kabupaten_kota");
+                })
+            ],
+            'q'         =>"nullable"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $activity=CurahHujanRepo::gets_activity($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$activity['current_page'],
+            'last_page'     =>$activity['last_page'],
+            'data'          =>$activity['data']
+        ]);
+    }
+
+    public function insert_chunk_multiple(Request $request)
+    {
+        $login_data=$request['fm__login_data'];
+        $req=$request->all();
+
+        //ROLE AUTHENTICATION
+        if(!in_array($login_data['role'], ['admin', 'kementan'])){
+            return response()->json([
+                'error' =>"ACCESS_NOT_ALLOWED"
+            ], 403);
+        }
+
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'tahun'     =>"required|date_format:Y",
+            'data'      =>[
+                Rule::requiredIf(!isset($req['data'])),
+                "array",
+                "min:0"
+            ]
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        DB::transaction(function() use($req, $login_data){
+            $q=CurahHujanModel::where("tahun", $req['tahun'])->delete();
+            
+            $updated_at=date("Y-m-d H:i:s");
+            $insert_data=[];
+            $activity_data=[];
+            foreach($req['data'] as $val){
+                $insert_data[]=[
+                    'id_region' =>$val['id_region'],
+                    'tahun'     =>$req['tahun'],
+                    'bulan'     =>$val['bulan'],
+                    'input_ke'  =>$val['input_ke'],
+                    'curah_hujan'   =>$val['curah_hujan'],
+                    'updated_at'    =>$updated_at  
+                ];
+                $activity_data[]=[
+                    'id_region' =>$val['id_region'],
+                    'tahun'     =>$req['tahun'],
+                    'bulan'     =>$val['bulan'],
+                    'input_ke'  =>$val['input_ke'],
+                    'curah_hujan'   =>$val['curah_hujan'],
+                    'id_user'       =>$login_data['id_user'],
+                    'info_device'   =>$_SERVER['HTTP_USER_AGENT'],
+                    'updated_at'    =>$updated_at
+                ];
+            }
+
+            $insert_data=collect($insert_data);
+            $activity_data=collect($activity_data);
+
+            $insert_chunks=$insert_data->chunk(1000);
+            $activity_data=$activity_data->chunk(1000);
+
+            foreach ($insert_chunks as $key=>$chunk)
+            {
+                \DB::table('tbl_curah_hujan')->insert($chunk->toArray());
+                \DB::table("tbl_curah_hujan_activity")->insert($activity_data[$key]->toArray());
+            }
+        });
+
+        return response()->json([
+            'status'=>"ok"
         ]);
     }
 }
