@@ -9,6 +9,7 @@ use App\Models\RegionModel;
 use App\Models\EwsModel;
 use App\Models\FrontpageModel;
 use App\Models\SebaranOptModel;
+use App\Models\BantuanDPIModel;
 
 
 class FrontpageRepo{
@@ -652,6 +653,76 @@ class FrontpageRepo{
         ];
 
         return $geojson;
+    }
+
+    public static function gets_bantuan_dpi($params)
+    {
+        //params
+        $params['per_page']=trim($params['per_page']);
+        $params['tahun']=trim($params['tahun']);
+        $params['province_id']=trim($params['province_id']);
+        $params['regency_id']=trim($params['regency_id']);
+        $params['district_id']=trim($params['district_id']);
+
+        //query
+        $query=BantuanDPIModel::with(
+            "region:id_region,region,nested", 
+            "region.parent:id_region,region,nested", 
+            "region.parent.parent:id_region,region,nested"
+        );
+        //--q
+        $query=$query->where(function($q)use($params){
+            $q->where("jenis_bantuan", "like", "%".$params['q']."%")
+                ->orWhere("kelompok_tani", "like", "%".$params['q']."%")
+                ->orWhere("pj_kelompok_tani", "like", "%".$params['q']."%");
+        });
+        //--region
+        if($params['province_id']!=""){
+            $query=$query->whereHas("region.parent.parent", function($q)use($params){
+                $q->where("id_region", $params['province_id']);
+            });
+        }
+        if($params['regency_id']!=""){
+            $query=$query->whereHas("region.parent", function($q)use($params){
+                $q->where("id_region", $params['regency_id']);
+            });
+        }
+        if($params['district_id']!=""){
+            $query=$query->where("id_region", $params['district_id']);
+        }
+        //--tahun
+        if($params['tahun']!=""){
+            $query=$query->where("tahun", $params['tahun']);
+        }
+
+        //--order
+        $query=$query->orderByDesc("id_bantuan_dpi");
+
+        //return
+        return $query->paginate($params['per_page'])->toArray();
+    }
+
+    public static function gets_bantuan_dpi_region()
+    {
+        $provinsi=RegionModel::select("id_region", "region")->where("type", "provinsi");
+        $kab_kota=RegionModel::select("id_region", "nested", "region")->where("type", "kabupaten_kota");
+        $kecamatan=RegionModel::select("id_region", "nested", "region")->where("type", "kecamatan");
+
+        return [
+            'provinsi'  =>$provinsi->get(),
+            'kab_kota'  =>$kab_kota->get(),
+            'kecamatan' =>$kecamatan->get()
+        ];
+    }
+
+    public static function gets_bantuan_dpi_peta()
+    {
+        $query=RegionModel::select("id_region" ,"region", "nested", "geo_json->map_center as map_center");
+        $query=$query->with("parent:id_region,region,nested", "parent.parent:id_region,region,nested");
+        $query=$query->withWhereHas("bantuan_dpi");
+        $query=$query->where("type", "kecamatan");
+
+        return $query->get();
     }
 
     //ADMIN

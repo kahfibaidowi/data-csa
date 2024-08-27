@@ -111,4 +111,9 @@ class RegionModel extends Model{
     public function curah_hujan_activity(){
         return $this->hasMany(CurahHujanActivityModel::class, "id_region", "id_region")->orderByDesc("id_curah_hujan_activity");
     }
+
+    //--bantuan dpi
+    public function bantuan_dpi(){
+        return $this->hasMany(BantuanDPIModel::class, "id_region", "id_region");
+    }
 }

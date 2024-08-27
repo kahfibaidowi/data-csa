@@ -242,6 +242,64 @@ class FrontpageController extends Controller
         ]);
     }
 
+    public function gets_bantuan_dpi(Request $request)
+    {
+        $req=$request->all();
+        
+        //VALIDATION
+        $validation=Validator::make($req, [
+            'per_page'      =>[
+                Rule::requiredIf(!isset($req['per_page'])),
+                'integer',
+                'min:1'
+            ],
+            'q'             =>[
+                Rule::requiredIf(!isset($req['q']))
+            ],
+            'tahun'         =>"present",
+            'province_id'   =>"present",
+            'regency_id'    =>"present",
+            'district_id'   =>"present"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 500);
+        }
+
+        //SUCCESS
+        $bantuan_dpi=FrontpageRepo::gets_bantuan_dpi($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$bantuan_dpi['current_page'],
+            'last_page'     =>$bantuan_dpi['last_page'],
+            'data'          =>$bantuan_dpi['data']
+        ]);
+    }
+
+    public function gets_bantuan_dpi_region(Request $request)
+    {
+        //SUCCESS
+        $bantuan_dpi_region=FrontpageRepo::gets_bantuan_dpi_region();
+
+        return response()->json([
+            'data'  =>$bantuan_dpi_region
+        ]);
+    }
+
+    public function gets_bantuan_dpi_peta(Request $request)
+    {
+        $req=$request->all();
+
+        $bantuan_dpi=FrontpageRepo::gets_bantuan_dpi_peta($req);
+
+        return response()->json([
+            'data'          =>$bantuan_dpi
+        ]);
+    }
+
     // public function gets_curah_hujan_kecamatan(Request $request)
     // {
     //     $req=$request->all();

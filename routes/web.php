@@ -77,6 +77,15 @@ $router->group(['prefix'=>'/sebaran_opt', 'middleware'=>'auth'], function()use($
     // $router->put("/{id}", ['uses'=>"OptController@update"]);
 });
 
+//BANTUAN DPI
+$router->group(['prefix'=>'/bantuan_dpi', 'middleware'=>'auth'], function()use($router){
+    $router->get("/", ['uses'=>"BantuanDPIController@gets"]);
+    $router->get("/{id}", ['uses'=>"BantuanDPIController@get"]);
+    $router->post("/", ['uses'=>"BantuanDPIController@add"]);
+    $router->delete("/{id}", ['uses'=>"BantuanDPIController@delete"]);
+    $router->put("/{id}", ['uses'=>"BantuanDPIController@update"]);
+});
+
 //CURAH HUJAN NORMAL
 $router->group(['prefix'=>'/curah_hujan_normal', 'middleware'=>'auth'], function()use($router){
     $router->post("/action/copy_from_curah_hujan", ['uses'=>"CurahHujanNormalController@copy_from_curah_hujan"]);
@@ -139,6 +148,9 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/sebaran_opt", ['uses'=>"FrontpageController@gets_sebaran_opt"]);
     $router->get("/sebaran_opt/region", ['uses'=>"FrontpageController@gets_sebaran_opt_region"]);
     $router->get("/region/data/sebaran_opt", ['uses'=>"FrontpageController@gets_region_sebaran_opt"]);
+    $router->get("/bantuan_dpi", ['uses'=>"FrontpageController@gets_bantuan_dpi"]);
+    $router->get("/bantuan_dpi/region", ['uses'=>"FrontpageController@gets_bantuan_dpi_region"]);
+    $router->get("/bantuan_dpi/peta", ['uses'=>"FrontpageController@gets_bantuan_dpi_peta"]);
 });
 
 //test
