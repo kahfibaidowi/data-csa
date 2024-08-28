@@ -151,6 +151,11 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/bantuan_dpi", ['uses'=>"FrontpageController@gets_bantuan_dpi"]);
     $router->get("/bantuan_dpi/region", ['uses'=>"FrontpageController@gets_bantuan_dpi_region"]);
     $router->get("/bantuan_dpi/peta", ['uses'=>"FrontpageController@gets_bantuan_dpi_peta"]);
+    //region
+    $router->get("/region/type/all", ['uses'=>"FrontpageController@gets_region"]);
+    //curah hujan
+    $router->get("/curah_hujan", ['uses'=>"FrontpageController@gets_curah_hujan"]);
+
 });
 
 //test

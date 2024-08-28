@@ -725,6 +725,47 @@ class FrontpageRepo{
         return $query->get();
     }
 
+    //REGION
+    public static function gets_all_region()
+    {
+        $provinsi=RegionModel::select("id_region", "region")->where("type", "provinsi");
+        $kab_kota=RegionModel::select("id_region", "nested", "region")->where("type", "kabupaten_kota");
+        $kecamatan=RegionModel::select("id_region", "nested", "region")->where("type", "kecamatan");
+
+        return [
+            'provinsi'  =>$provinsi->get(),
+            'kab_kota'  =>$kab_kota->get(),
+            'kecamatan' =>$kecamatan->get()
+        ];
+    }
+
+    //CURAH HUJAN
+    public static function gets_curah_hujan($params)
+    {
+        $params['per_page']=isset($params['per_page'])?trim($params['per_page']):"";
+        $params['id_region']=isset($params['id_region'])?trim($params['id_region']):"";
+        $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
+
+        //query
+        $query=CurahHujanModel::query();
+        //--id_region
+        if($params['id_region']!=""){
+            $query=$query->where("id_region", $params['id_region']);
+        }
+        //--tahun
+        if($params['tahun']!=""){
+            $query=$query->where("tahun", $params['tahun']);
+        }
+
+        $query=$query->orderBy("id_region");
+        $query=$query->orderBy("tahun");
+        $query=$query->orderBy("bulan");
+        $query=$query->orderBy("input_ke");
+
+        //return
+        return $query->paginate($params['per_page'])->toArray();
+    }
+
     //ADMIN
     public static function get_widget($type)
     {

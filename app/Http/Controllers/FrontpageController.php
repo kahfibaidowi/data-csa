@@ -383,6 +383,48 @@ class FrontpageController extends Controller
         ]);
     }
 
+    //REGION
+    public function gets_region(Request $request)
+    {
+        //SUCCESS
+        $region=FrontpageRepo::gets_all_region();
+
+        return response()->json([
+            'data'  =>$region
+        ]);
+    }
+
+    //CURAH HUJAN
+    public function gets_curah_hujan(Request $request)
+    {
+        $req=$request->all();
+
+        //VALIDATION
+        //Query parameters
+        $validation=Validator::make($req, [
+            'per_page'      =>"nullable|integer|min:1",
+            'id_region'     =>"nullable",
+            'tahun'         =>"nullable"
+        ]);
+        if($validation->fails()){
+            return response()->json([
+                'error' =>"VALIDATION_ERROR",
+                'data'  =>$validation->errors()->first()
+            ], 400);
+        }
+
+        //SUCCESS
+        $curah_hujan=FrontpageRepo::gets_curah_hujan($req);
+
+        return response()->json([
+            'first_page'    =>1,
+            'current_page'  =>$curah_hujan['current_page'],
+            'last_page'     =>$curah_hujan['last_page'],
+            'total'         =>$curah_hujan['total'],
+            'data'          =>$curah_hujan['data']
+        ]);
+    }
+
     //ADMIN
     public function upsert_widget(Request $request)
     {
