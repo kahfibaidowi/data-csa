@@ -747,7 +747,7 @@ class FrontpageRepo{
         $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
 
         //query
-        $query=CurahHujanModel::query();
+        $query=CurahHujanModel::with("ch_normal");
         //--id_region
         if($params['id_region']!=""){
             $query=$query->where("id_region", $params['id_region']);
@@ -763,7 +763,19 @@ class FrontpageRepo{
         $query=$query->orderBy("input_ke");
 
         //return
-        return $query->paginate($params['per_page'])->toArray();
+        $data=$query->paginate($params['per_page'])->toArray();
+
+        $curah_hujan=[];
+        foreach($data['data'] as $val){
+            $curah_hujan[]=array_merge($val, [
+                'curah_hujan_normal'=>$val['ch_normal']['curah_hujan_normal'],
+                'ch_normal'         =>null
+            ]);
+        }
+
+        return array_merge($data, [
+            'data'  =>$curah_hujan
+        ]);
     }
 
     //ADMIN
