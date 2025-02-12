@@ -142,15 +142,10 @@ class SebaranOptController extends Controller
             $custom_error['data.'.$key.'.komoditas.required']="Baris ".($key+1).", Komoditas harus diisi!";
             $custom_error['data.'.$key.'.komoditas.in']="Baris ".($key+1).", Komoditas Harus Berisi Aneka Cabai/Bawang Merah!";
             $custom_error['data.'.$key.'.opt.required']="Baris ".($key+1).", OPT harus diisi!";
-            $custom_error['data.'.$key.'.lts_ringan.required']="Baris ".($key+1).", LTS Ringan harus diisi!";
             $custom_error['data.'.$key.'.lts_ringan.numeric']="Baris ".($key+1).", LTS Ringan tidak valid!";
-            $custom_error['data.'.$key.'.lts_sedang.required']="Baris ".($key+1).", LTS Sedang harus diisi!";
             $custom_error['data.'.$key.'.lts_sedang.numeric']="Baris ".($key+1).", LTS Sedang tidak valid!";
-            $custom_error['data.'.$key.'.lts_berat.required']="Baris ".($key+1).", LTS Berat harus diisi!";
             $custom_error['data.'.$key.'.lts_berat.numeric']="Baris ".($key+1).", LTS Berat tidak valid!";
-            $custom_error['data.'.$key.'.sum_lts.required']="Baris ".($key+1).", Sum LTS harus diisi!";
             $custom_error['data.'.$key.'.sum_lts.numeric']="Baris ".($key+1).", Sum LTS tidak valid!";
-            $custom_error['data.'.$key.'.lts_puso.required']="Baris ".($key+1).", LTS Puso harus diisi!";
             $custom_error['data.'.$key.'.lts_puso.numeric']="Baris ".($key+1).", LTS Puso tidak valid!";
         }
 
@@ -171,11 +166,11 @@ class SebaranOptController extends Controller
             'data.*.bulan'      =>"required|integer|min:1|max:12",
             'data.*.komoditas'  =>"required|in:Aneka Cabai,Bawang Merah",
             'data.*.opt'        =>"required",
-            'data.*.lts_ringan' =>"required|numeric",
-            'data.*.lts_sedang' =>"required|numeric",
-            'data.*.lts_berat'  =>"required|numeric",
-            'data.*.sum_lts'    =>"required|numeric",
-            'data.*.lts_puso'   =>"required|numeric"
+            'data.*.lts_ringan' =>"present|numeric",
+            'data.*.lts_sedang' =>"present|numeric",
+            'data.*.lts_berat'  =>"present|numeric",
+            'data.*.sum_lts'    =>"present|numeric",
+            'data.*.lts_puso'   =>"present|numeric"
         ], $custom_error);
         if($validation->fails()){
             return response()->json([
@@ -198,11 +193,11 @@ class SebaranOptController extends Controller
                     [
                         'provinsi'  =>"",
                         'kab_kota'  =>"",
-                        'lts_ringan'=>$val['lts_ringan'],
-                        'lts_sedang'=>$val['lts_sedang'],
-                        'lts_berat' =>$val['lts_berat'],
-                        'sum_lts'   =>$val['sum_lts'],
-                        'lts_puso'  =>$val['lts_puso']
+                        'lts_ringan'=>$val['lts_ringan']!=""?$val['lts_ringan']:null,
+                        'lts_sedang'=>$val['lts_sedang']!=""?$val['lts_sedang']:null,
+                        'lts_berat' =>$val['lts_berat']!=""?$val['lts_berat']:null,
+                        'sum_lts'   =>$val['sum_lts']!=""?$val['sum_lts']:null,
+                        'lts_puso'  =>$val['lts_puso']!=""?$val['lts_puso']:null
                     ]
                 );
             }
