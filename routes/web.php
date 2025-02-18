@@ -71,8 +71,9 @@ $router->group(['prefix'=>'/opt', 'middleware'=>'auth'], function()use($router){
 $router->group(['prefix'=>'/sebaran_opt', 'middleware'=>'auth'], function()use($router){
     $router->get("/", ['uses'=>"SebaranOptController@gets"]);
     $router->get("/type/region_kabupaten_kota", ['uses'=>"SebaranOptController@gets_region_kabupaten_kota"]);
+    $router->post("/type/import_chunks", ['uses'=>"SebaranOptController@import_chunks"]);
     // $router->get("/{id}", ['uses'=>"OptController@get"]);
-    $router->post("/type/multiple", ['uses'=>"SebaranOptController@add_multiple"]);
+    // $router->post("/type/multiple", ['uses'=>"SebaranOptController@add_multiple"]);
     // $router->delete("/{id}", ['uses'=>"OptController@delete"]);
     // $router->put("/{id}", ['uses'=>"OptController@update"]);
 });

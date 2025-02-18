@@ -317,7 +317,17 @@ class FrontpageRepo{
                                     ifnull(sum(lts_sedang), 0) as sum_lts_sedang, 
                                     ifnull(sum(lts_berat), 0) as sum_lts_berat, 
                                     ifnull(sum(sum_lts), 0) as sum_sum_lts, 
-                                    ifnull(sum(lts_puso), 0) as sum_lts_puso");
+                                    ifnull(sum(lts_puso), 0) as sum_lts_puso,
+                                    ifnull(sum(lks_ringan), 0) as sum_lks_ringan, 
+                                    ifnull(sum(lks_sedang), 0) as sum_lks_sedang, 
+                                    ifnull(sum(lks_berat), 0) as sum_lks_berat, 
+                                    ifnull(sum(sum_lks), 0) as sum_sum_lks, 
+                                    ifnull(sum(lks_puso), 0) as sum_lks_puso,
+                                    ifnull(sum(lp_pemusnahan), 0) as sum_lp_pemusnahan, 
+                                    ifnull(sum(lp_pestisida_kimia), 0) as sum_lp_pestisida_kimia, 
+                                    ifnull(sum(lp_cara_lain), 0) as sum_lp_cara_lain, 
+                                    ifnull(sum(sum_lp), 0) as sum_sum_lp, 
+                                    ifnull(sum(lp_agens_hayati), 0) as sum_lp_agens_hayati");
         if($params['komoditas']!=""){
             $q_infografis=$q_infografis->where("komoditas", $params['komoditas']);
         }

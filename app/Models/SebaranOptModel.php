@@ -10,18 +10,32 @@ class SebaranOptModel extends Model{
     protected $table="tbl_sebaran_opt";
     protected $primaryKey="id_sebaran_opt";
     protected $fillable=[
+        "id_region",
         "bulan",
         "tahun",
-        "id_region",
-        "provinsi",
-        "kab_kota",
+        "periode",
+        "kategori",
         "komoditas",
+        "jenis_varietas",
+        "satuan",
         "opt",
         "lts_ringan",
         "lts_sedang",
         "lts_berat",
+        "lts_puso",
+        "lks_ringan",
+        "lks_sedang",
+        "lks_berat",
+        "lks_puso",
+        "lp_pemusnahan",
+        "lp_pestisida_kimia",
+        "lp_cara_lain",
+        "lp_agens_hayati",
         "sum_lts",
-        "lts_puso"
+        "sum_lks",
+        "sum_lp",
+        "updated_at",
+        "created_at"
     ];
     protected $perPage=99999999999999999999;
 
