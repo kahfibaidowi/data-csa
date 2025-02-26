@@ -156,6 +156,7 @@ $router->group(['prefix'=>"/frontpage"], function()use($router){
     $router->get("/region/type/all", ['uses'=>"FrontpageController@gets_region"]);
     //curah hujan
     $router->get("/curah_hujan", ['uses'=>"FrontpageController@gets_curah_hujan"]);
+    $router->get("/curah_hujan/sebaran_opt", ['uses'=>"FrontpageController@gets_curah_hujan_sebaran_opt"]);
 
 });
 

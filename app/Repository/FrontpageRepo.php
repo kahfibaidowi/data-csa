@@ -788,6 +788,44 @@ class FrontpageRepo{
         ]);
     }
 
+    public static function gets_curah_hujan_sebaran_opt($params)
+    {
+        $params['per_page']=isset($params['per_page'])?trim($params['per_page']):"";
+        $params['id_region']=isset($params['id_region'])?trim($params['id_region']):"";
+        $params['tahun']=isset($params['tahun'])?trim($params['tahun']):"";
+
+        //query
+        $query=CurahHujanModel::with("ch_normal", "region:id_region,nested,region", "region.parent:id_region,nested,region", "region.parent.parent:id_region,nested,region");
+        //--id_region
+        if($params['id_region']!=""){
+            $query=$query->where("id_region", $params['id_region']);
+        }
+        //--tahun
+        if($params['tahun']!=""){
+            $query=$query->where("tahun", $params['tahun']);
+        }
+
+        $query=$query->orderBy("id_region");
+        $query=$query->orderBy("tahun");
+        $query=$query->orderBy("bulan");
+        $query=$query->orderBy("input_ke");
+
+        //return
+        $data=$query->paginate($params['per_page'])->toArray();
+
+        $curah_hujan=[];
+        foreach($data['data'] as $val){
+            $curah_hujan[]=array_merge($val, [
+                'curah_hujan_normal'=>$val['ch_normal']['curah_hujan_normal'],
+                'ch_normal'         =>null
+            ]);
+        }
+
+        return array_merge($data, [
+            'data'  =>$curah_hujan
+        ]);
+    }
+
     //ADMIN
     public static function get_widget($type)
     {
